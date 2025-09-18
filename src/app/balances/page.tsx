@@ -21,7 +21,7 @@ const StaffBalancesPage = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
       <Header 
-        title="Employee Balances" 
+        title="View Balances" 
         showBackButton={true}
         backButtonPath="/"
       />
@@ -42,8 +42,8 @@ const StaffBalancesPage = () => {
                   }
                 />
                 <div className="ml-4">
-                  <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Employee Leave Balances</h2>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">View and manage all employee leave balances</p>
+                  <h2 className="text-xl font-semibold text-gray-900 dark:text-white">View leave balances</h2>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">View leave balances</p>
                 </div>
               </div>
             </Card.Header>

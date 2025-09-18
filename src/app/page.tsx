@@ -248,8 +248,8 @@ export default function Home() {
                     }
                   />
                   <div className="ml-4">
-                    <Card.Title>Employee Balances</Card.Title>
-                    <Card.Description>View all employee leave balances</Card.Description>
+                    <Card.Title>View Balances</Card.Title>
+                    <Card.Description>View Leave Balances</Card.Description>
                   </div>
                   <Card.Arrow />
                 </div>
@@ -271,27 +271,6 @@ export default function Home() {
                   <div className="ml-4">
                     <Card.Title>Pending Leave Requests</Card.Title>
                     <Card.Description>Review and approve team requests</Card.Description>
-                  </div>
-                  <Card.Arrow />
-                </div>
-              </Card.Content>
-            </Card>
-
-            {/* Manage Staff Card (Admin) */}
-            <Card 
-              onClick={() => router.push('/balances')}
-              variant="clickable"
-              borderColor="red"
-            >
-              <Card.Content>
-                <div className="flex items-center">
-                  <Card.Icon 
-                    color="red"
-                    icon={<UserGroupIcon className="w-6 h-6" />}
-                  />
-                  <div className="ml-4">
-                    <Card.Title>Manage Staff</Card.Title>
-                    <Card.Description>View and manage employee balances</Card.Description>
                   </div>
                   <Card.Arrow />
                 </div>
