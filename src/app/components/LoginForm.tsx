@@ -101,7 +101,7 @@ export default function LoginForm() {
       
       // Redirect to dashboard after a short delay
       setTimeout(() => {
-        router.push('/dashboard');
+        router.push('/');
       }, 1500);
       
     } catch (error) {
@@ -261,8 +261,9 @@ export default function LoginForm() {
               Demo Accounts:
             </p>
             <div className="text-xs text-gray-500 dark:text-gray-500 space-y-1">
-              <p>Employee: employee@example.com / password123</p>
-              <p>Manager: manager@example.com / password123</p>
+              <p>Employee: emma.davis@company.com / password123</p>
+              <p>Manager: sarah.johnson@company.com / password123</p>
+              <p>Admin: john.smith@company.com / password123</p>
             </div>
           </div>
         </div>

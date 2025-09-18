@@ -7,6 +7,7 @@ import { apiService, type LeaveRequest, type ApiError } from '../services/api';
 import ConfirmationDialog from '../components/ConfirmationDialog';
 import { useBalance } from '../contexts/BalanceContext';
 import Header from '../components/Header';
+import Card from '../components/Card';
 
 type SortField = keyof LeaveRequest | 'employee.name';
 type SortDirection = 'asc' | 'desc';
@@ -194,13 +195,18 @@ const LeaveRequestsPage = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
-      <Header title="My Leave Requests" />
+      <Header 
+        title="My Leave Requests" 
+        showBackButton={true}
+        backButtonPath="/"
+      />
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div className="px-4 py-6 sm:px-0">
           {/* Filters */}
-          <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6 mb-6">
+          <Card variant="default" className="mb-6">
+            <Card.Content className="p-6">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
               <div className="mb-4 sm:mb-0">
                 <label htmlFor="status-filter" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -222,10 +228,11 @@ const LeaveRequestsPage = () => {
                 Showing {filteredAndSortedRequests.length} of {requests.length} requests
               </div>
             </div>
-          </div>
+            </Card.Content>
+          </Card>
 
           {/* Table */}
-          <div className="bg-white dark:bg-gray-800 shadow overflow-hidden sm:rounded-lg">
+          <Card variant="default">
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
@@ -350,12 +357,14 @@ const LeaveRequestsPage = () => {
                 </tbody>
               </table>
             </div>
-          </div>
+          </Card>
 
           {filteredAndSortedRequests.length === 0 && (
-            <div className="bg-white shadow sm:rounded-lg p-6 text-center">
-              <p className="text-gray-500">No leave requests found matching your criteria.</p>
-            </div>
+            <Card variant="default" className="text-center">
+              <Card.Content className="p-6">
+                <p className="text-gray-500">No leave requests found matching your criteria.</p>
+              </Card.Content>
+            </Card>
           )}
         </div>
       </main>

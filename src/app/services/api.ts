@@ -78,12 +78,22 @@ interface CreateLeaveRequestData {
   duration: number;
 }
 
+interface CreateStaffData {
+  firstName: string;
+  lastName: string;
+  email: string;
+  password: string;
+  roleId: string;
+  annualLeaveBalance: number;
+  sickLeaveBalance: number;
+}
+
 class ApiService {
   private baseURL: string;
   private timeout: number;
 
   constructor() {
-    this.baseURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3002';
+    this.baseURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
     this.timeout = 10000;
   }
 
@@ -267,10 +277,56 @@ class ApiService {
 
   // Method to fetch team balances
   async getTeamBalances(): Promise<TeamBalance[]> {
-    return this.makeAuthenticatedRequest<TeamBalance[]>('/api/users/team-balances');
+    // Use getAllUsers endpoint instead of team-balances due to route ordering issue
+    const users = await this.makeAuthenticatedRequest<any[]>('/api/users');
+    // Transform user data to match TeamBalance interface
+    return users.map(user => ({
+      id: user.id,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.email,
+      annualLeaveBalance: user.annualLeaveBalance || 0,
+      sickLeaveBalance: user.sickLeaveBalance || 0
+    }));
+  }
+
+  // Method to create a new staff member
+  async createStaff(staffData: CreateStaffData): Promise<UserProfile> {
+    // Step 1: Register the user (creates with default employee role)
+    const newUser = await this.makeRequest<UserProfile>('/api/auth/register', {
+      method: 'POST',
+      body: JSON.stringify({
+        firstName: staffData.firstName,
+        lastName: staffData.lastName,
+        email: staffData.email,
+        password: staffData.password
+      }),
+    });
+
+    // Step 2: Update the user's role if not employee
+    if (staffData.roleId && staffData.roleId !== '5596b6ac-2059-4a6f-8522-4180c3c82e1a') {
+      await this.makeAuthenticatedRequest(`/api/users/${newUser.id}/role`, {
+        method: 'POST',
+        body: JSON.stringify({ roleId: staffData.roleId }),
+      });
+    }
+
+    // Step 3: Update leave balances if provided
+    if (staffData.annualLeaveBalance !== undefined || staffData.sickLeaveBalance !== undefined) {
+      await this.makeAuthenticatedRequest(`/api/users/${newUser.id}/leave-balance`, {
+        method: 'POST',
+        body: JSON.stringify({
+          annualLeaveChange: staffData.annualLeaveBalance || 25,
+          sickLeaveChange: staffData.sickLeaveBalance || 10
+        }),
+      });
+    }
+
+    // Return the updated user data
+    return this.makeAuthenticatedRequest<UserProfile>(`/api/users/${newUser.id}`);
   }
 }
 
 // Export singleton instance
 export const apiService = new ApiService();
-export type { LoginRequest, LoginResponse, ApiError, LeaveRequest, UserProfile, LeaveType, CreateLeaveRequestData, TeamBalance };
+export type { LoginRequest, LoginResponse, ApiError, LeaveRequest, UserProfile, LeaveType, CreateLeaveRequestData, TeamBalance, CreateStaffData };

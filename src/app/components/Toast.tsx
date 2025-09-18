@@ -15,6 +15,7 @@ export interface ToastProps {
 const Toast = ({ id, type, title, message, duration = 5000, onClose }: ToastProps) => {
   const [isVisible, setIsVisible] = useState(false);
   const [isLeaving, setIsLeaving] = useState(false);
+  const [progress, setProgress] = useState(100);
 
   const handleClose = useCallback(() => {
     setIsLeaving(true);
@@ -31,19 +32,41 @@ const Toast = ({ id, type, title, message, duration = 5000, onClose }: ToastProp
 
   useEffect(() => {
     if (duration > 0) {
+      // Progress bar animation
+      const progressInterval = setInterval(() => {
+        setProgress(prev => {
+          const newProgress = prev - (100 / (duration / 100));
+          return newProgress <= 0 ? 0 : newProgress;
+        });
+      }, 100);
+
       const timer = setTimeout(() => {
         handleClose();
       }, duration);
-      return () => clearTimeout(timer);
+      
+      return () => {
+        clearTimeout(timer);
+        clearInterval(progressInterval);
+      };
     }
   }, [duration, handleClose]);
 
   const getIcon = () => {
     switch (type) {
       case 'success':
-        return <CheckCircleIcon className="h-6 w-6 text-green-400" />;
+        return (
+          <div className="relative">
+            <CheckCircleIcon className="h-7 w-7 text-green-500 animate-pulse" />
+            <div className="absolute inset-0 h-7 w-7 bg-green-400 rounded-full opacity-25 animate-ping"></div>
+          </div>
+        );
       case 'error':
-        return <XCircleIcon className="h-6 w-6 text-red-400" />;
+        return (
+          <div className="relative">
+            <XCircleIcon className="h-7 w-7 text-red-500 animate-bounce" />
+            <div className="absolute inset-0 h-7 w-7 bg-red-400 rounded-full opacity-25 animate-ping"></div>
+          </div>
+        );
       default:
         return null;
     }
@@ -52,9 +75,9 @@ const Toast = ({ id, type, title, message, duration = 5000, onClose }: ToastProp
   const getBackgroundColor = () => {
     switch (type) {
       case 'success':
-        return 'bg-green-50 border-green-200';
+        return 'bg-gradient-to-r from-green-50 to-emerald-50 border-green-300 shadow-green-100';
       case 'error':
-        return 'bg-red-50 border-red-200';
+        return 'bg-gradient-to-r from-red-50 to-rose-50 border-red-300 shadow-red-100';
       default:
         return 'bg-gray-50 border-gray-200';
     }
@@ -63,11 +86,22 @@ const Toast = ({ id, type, title, message, duration = 5000, onClose }: ToastProp
   const getTextColor = () => {
     switch (type) {
       case 'success':
-        return 'text-green-800';
+        return 'text-green-900';
       case 'error':
-        return 'text-red-800';
+        return 'text-red-900';
       default:
         return 'text-gray-800';
+    }
+  };
+
+  const getProgressBarColor = () => {
+    switch (type) {
+      case 'success':
+        return 'bg-green-400';
+      case 'error':
+        return 'bg-red-400';
+      default:
+        return 'bg-gray-400';
     }
   };
 
@@ -105,6 +139,16 @@ const Toast = ({ id, type, title, message, duration = 5000, onClose }: ToastProp
           </div>
         </div>
       </div>
+      
+      {/* Progress bar */}
+      {duration > 0 && (
+        <div className="h-1 bg-gray-200 bg-opacity-50">
+          <div 
+            className={`h-full transition-all duration-100 ease-linear ${getProgressBarColor()}`}
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+      )}
     </div>
   );
 };
