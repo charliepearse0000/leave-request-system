@@ -1,0 +1,455 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useToast } from '../contexts/ToastContext';
+import { apiService, UserProfile } from '../services/api';
+import Header from '../components/Header';
+import EditUserForm from '../components/EditUserForm';
+import Card from '../components/Card';
+
+interface Role {
+  id: string;
+  name: string;
+  description: string;
+}
+
+export default function EditUsersPage() {
+  const [users, setUsers] = useState<UserProfile[]>([]);
+  const [selectedUser, setSelectedUser] = useState<UserProfile | null>(null);
+  const [showEditForm, setShowEditForm] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [roleFilter, setRoleFilter] = useState('all');
+  const [sortConfig, setSortConfig] = useState<{key: string, direction: 'asc' | 'desc'} | null>(null);
+  const { showError } = useToast();
+  const router = useRouter();
+
+  useEffect(() => {
+    // Check if user is admin
+    const userData = localStorage.getItem('userData');
+    if (userData) {
+      const user = JSON.parse(userData);
+      if (user.role !== 'admin') {
+        router.push('/');
+        return;
+      }
+    } else {
+      router.push('/');
+      return;
+    }
+
+    fetchUsers();
+  }, [router]);
+
+  const fetchUsers = async () => {
+    try {
+      setIsLoading(true);
+      const usersData = await apiService.makeAuthenticatedRequest<UserProfile[]>('/api/users');
+      setUsers(usersData);
+    } catch (error) {
+      console.error('Error fetching users:', error);
+      showError('Failed to load users');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleEditUser = (user: UserProfile) => {
+    setSelectedUser(user);
+    setShowEditForm(true);
+  };
+
+  const handleUserUpdated = (updatedUser: UserProfile) => {
+    setUsers(prev => prev.map(user => 
+      user.id === updatedUser.id ? updatedUser : user
+    ));
+    setShowEditForm(false);
+    setSelectedUser(null);
+  };
+
+  const handleCancelEdit = () => {
+    setShowEditForm(false);
+    setSelectedUser(null);
+  };
+
+  const handleSort = (key: string) => {
+    let direction: 'asc' | 'desc' = 'asc';
+    if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') {
+      direction = 'desc';
+    }
+    setSortConfig({ key, direction });
+  };
+
+  const filteredUsers = users
+    .filter(user => {
+      // Search filter
+      const matchesSearch = `${user.firstName} ${user.lastName}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        user.role.name.toLowerCase().includes(searchTerm.toLowerCase());
+      
+      // Role filter
+      const matchesRole = roleFilter === 'all' || user.role.name === roleFilter;
+      
+      return matchesSearch && matchesRole;
+    })
+    .sort((a, b) => {
+      if (sortConfig) {
+        let aValue: string | number;
+        let bValue: string | number;
+        
+        switch (sortConfig.key) {
+          case 'name':
+            aValue = `${a.firstName} ${a.lastName}`;
+            bValue = `${b.firstName} ${b.lastName}`;
+            break;
+          case 'email':
+            aValue = a.email;
+            bValue = b.email;
+            break;
+          case 'role':
+            aValue = a.role.name;
+            bValue = b.role.name;
+            break;
+          case 'annualLeaveBalance':
+            aValue = a.annualLeaveBalance;
+            bValue = b.annualLeaveBalance;
+            break;
+          case 'sickLeaveBalance':
+            aValue = a.sickLeaveBalance;
+            bValue = b.sickLeaveBalance;
+            break;
+          default:
+            return 0;
+        }
+        
+        if (aValue < bValue) {
+          return sortConfig.direction === 'asc' ? -1 : 1;
+        }
+        if (aValue > bValue) {
+          return sortConfig.direction === 'asc' ? 1 : -1;
+        }
+        return 0;
+      }
+      
+      // Default sort: employees first, then managers, then admins
+      const roleOrder = { 'employee': 0, 'manager': 1, 'admin': 2 };
+      const aOrder = roleOrder[a.role.name as keyof typeof roleOrder] ?? 3;
+      const bOrder = roleOrder[b.role.name as keyof typeof roleOrder] ?? 3;
+      
+      if (aOrder !== bOrder) {
+        return aOrder - bOrder;
+      }
+      
+      // If same role, sort alphabetically by name
+      return `${a.firstName} ${a.lastName}`.localeCompare(`${b.firstName} ${b.lastName}`);
+    });
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
+      <Header title="Edit Users" />
+
+      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        <div className="px-4 py-6 sm:px-0">
+          {/* Page Header */}
+          <div className="mb-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+                  User Management
+                </h1>
+                <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                  Manage user roles, information, and leave balances
+                </p>
+              </div>
+              <button
+                onClick={() => router.push('/')}
+                className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600"
+              >
+                <svg className="-ml-1 mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+                Back to Dashboard
+              </button>
+            </div>
+          </div>
+
+          {/* User Management Card */}
+          <Card variant="default">
+            <Card.Header>
+              <div className="flex items-center space-x-3">
+                <Card.Icon 
+                  color="purple"
+                  icon={
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                  }
+                />
+                <div>
+                  <Card.Title>Edit Users</Card.Title>
+                  <Card.Description>Manage user roles and information</Card.Description>
+                </div>
+              </div>
+            </Card.Header>
+
+            <Card.Content>
+              {/* Search and Filter Bar */}
+              <div className="mb-6 space-y-4">
+                <div className="flex flex-col sm:flex-row gap-4">
+                  <div className="relative flex-1">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                      </svg>
+                    </div>
+                    <input
+                      type="text"
+                      placeholder="Search users by name, email, or role..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg leading-5 bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                  <div className="sm:w-48">
+                    <select
+                      value={roleFilter}
+                      onChange={(e) => setRoleFilter(e.target.value)}
+                      className="block w-full px-3 py-3 border border-gray-300 rounded-lg bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    >
+                      <option value="all">All Roles</option>
+                      <option value="employee">Employees</option>
+                      <option value="manager">Managers</option>
+                      <option value="admin">Admins</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              {/* Quick Stats */}
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 border border-blue-200 dark:border-blue-700">
+                  <div className="flex items-center">
+                    <div className="flex-shrink-0">
+                      <svg className="h-8 w-8 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                      </svg>
+                    </div>
+                    <div className="ml-4">
+                      <p className="text-2xl font-bold text-blue-900 dark:text-blue-100">{users.length}</p>
+                      <p className="text-sm text-blue-600 dark:text-blue-300">Total Users</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-4 border border-purple-200 dark:border-purple-700">
+                  <div className="flex items-center">
+                    <div className="flex-shrink-0">
+                      <svg className="h-8 w-8 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                      </svg>
+                    </div>
+                    <div className="ml-4">
+                      <p className="text-2xl font-bold text-purple-900 dark:text-purple-100">{users.filter(u => u.role.name === 'employee').length}</p>
+                      <p className="text-sm text-purple-600 dark:text-purple-300">Employees</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4 border border-green-200 dark:border-green-700">
+                  <div className="flex items-center">
+                    <div className="flex-shrink-0">
+                      <svg className="h-8 w-8 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </div>
+                    <div className="ml-4">
+                      <p className="text-2xl font-bold text-green-900 dark:text-green-100">{users.filter(u => u.role.name === 'admin').length}</p>
+                      <p className="text-sm text-green-600 dark:text-green-300">Admins</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="bg-yellow-50 dark:bg-yellow-900/20 rounded-lg p-4 border border-yellow-200 dark:border-yellow-700">
+                  <div className="flex items-center">
+                    <div className="flex-shrink-0">
+                      <svg className="h-8 w-8 text-yellow-600 dark:text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                      </svg>
+                    </div>
+                    <div className="ml-4">
+                      <p className="text-2xl font-bold text-yellow-900 dark:text-yellow-100">{users.filter(u => u.role.name === 'manager').length}</p>
+                      <p className="text-sm text-yellow-600 dark:text-yellow-300">Managers</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Users Table */}
+              <div className="overflow-x-auto">
+                {isLoading ? (
+                  <div className="flex justify-center py-12">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                  </div>
+                ) : filteredUsers.length === 0 ? (
+                  <div className="text-center py-12 text-gray-500 dark:text-gray-400">
+                    {searchTerm ? 'No users found matching your search.' : 'No users found.'}
+                  </div>
+                ) : (
+                  <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-600">
+                    <thead className="bg-gray-50 dark:bg-gray-700">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                          <button
+                            onClick={() => handleSort('name')}
+                            className="flex items-center space-x-1 hover:text-gray-700 dark:hover:text-gray-100 transition-colors"
+                          >
+                            <span>Name</span>
+                            <svg className={`w-4 h-4 transition-colors ${
+                              sortConfig?.key === 'name' 
+                                ? 'text-blue-600 dark:text-blue-400' 
+                                : 'text-gray-400 dark:text-gray-500'
+                            }`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              {sortConfig?.key === 'name' && sortConfig.direction === 'desc' ? (
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                              ) : (
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                              )}
+                            </svg>
+                          </button>
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                          <button
+                            onClick={() => handleSort('email')}
+                            className="flex items-center space-x-1 hover:text-gray-700 dark:hover:text-gray-100 transition-colors"
+                          >
+                            <span>Email</span>
+                            <svg className={`w-4 h-4 transition-colors ${
+                              sortConfig?.key === 'email' 
+                                ? 'text-blue-600 dark:text-blue-400' 
+                                : 'text-gray-400 dark:text-gray-500'
+                            }`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              {sortConfig?.key === 'email' && sortConfig.direction === 'desc' ? (
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                              ) : (
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                              )}
+                            </svg>
+                          </button>
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                          <button
+                            onClick={() => handleSort('role')}
+                            className="flex items-center space-x-1 hover:text-gray-700 dark:hover:text-gray-100 transition-colors"
+                          >
+                            <span>Role</span>
+                            <svg className={`w-4 h-4 transition-colors ${
+                              sortConfig?.key === 'role' 
+                                ? 'text-blue-600 dark:text-blue-400' 
+                                : 'text-gray-400 dark:text-gray-500'
+                            }`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              {sortConfig?.key === 'role' && sortConfig.direction === 'desc' ? (
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                              ) : (
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                              )}
+                            </svg>
+                          </button>
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                          <button
+                            onClick={() => handleSort('annualLeaveBalance')}
+                            className="flex items-center space-x-1 hover:text-gray-700 dark:hover:text-gray-100 transition-colors"
+                          >
+                            <span>Annual Leave</span>
+                            <svg className={`w-4 h-4 transition-colors ${
+                              sortConfig?.key === 'annualLeaveBalance' 
+                                ? 'text-blue-600 dark:text-blue-400' 
+                                : 'text-gray-400 dark:text-gray-500'
+                            }`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              {sortConfig?.key === 'annualLeaveBalance' && sortConfig.direction === 'desc' ? (
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                              ) : (
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                              )}
+                            </svg>
+                          </button>
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                          <button
+                            onClick={() => handleSort('sickLeaveBalance')}
+                            className="flex items-center space-x-1 hover:text-gray-700 dark:hover:text-gray-100 transition-colors"
+                          >
+                            <span>Sick Leave</span>
+                            <svg className={`w-4 h-4 transition-colors ${
+                              sortConfig?.key === 'sickLeaveBalance' 
+                                ? 'text-blue-600 dark:text-blue-400' 
+                                : 'text-gray-400 dark:text-gray-500'
+                            }`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              {sortConfig?.key === 'sickLeaveBalance' && sortConfig.direction === 'desc' ? (
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                              ) : (
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                              )}
+                            </svg>
+                          </button>
+                        </th>
+                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                          Actions
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-600">
+                      {filteredUsers.map((user) => (
+                        <tr key={user.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-sm font-medium text-gray-900 dark:text-white">
+                              {user.firstName} {user.lastName}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-sm text-gray-500 dark:text-gray-400">
+                              {user.email}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                              {user.role.name.charAt(0).toUpperCase() + user.role.name.slice(1)}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                            {user.annualLeaveBalance} days
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                            {user.sickLeaveBalance} days
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <button
+                              onClick={() => handleEditUser(user)}
+                              className="inline-flex items-center px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-md transition-all duration-200 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:bg-blue-500 dark:hover:bg-blue-600 dark:focus:ring-blue-400"
+                            >
+                              <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                              </svg>
+                              Edit
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                )}
+              </div>
+            </Card.Content>
+          </Card>
+        </div>
+      </main>
+
+      {/* Edit User Modal */}
+      {showEditForm && selectedUser && (
+        <EditUserForm
+          user={selectedUser}
+          onUserUpdated={handleUserUpdated}
+          onCancel={handleCancelEdit}
+        />
+      )}
+    </div>
+  );
+}
