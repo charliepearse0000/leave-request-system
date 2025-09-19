@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useToast } from '../contexts/ToastContext';
 import { apiService, UserProfile } from '../services/api';
+import { companySettings } from '../services/company-settings';
 
 interface EditUserFormProps {
   user: UserProfile;
@@ -106,19 +107,17 @@ const EditUserForm: React.FC<EditUserFormProps> = ({ user, onUserUpdated, onCanc
       }
 
       // Update leave balances if changed
+      let updatedUser: UserProfile;
       if (formData.annualLeaveBalance !== user.annualLeaveBalance || 
           formData.sickLeaveBalance !== user.sickLeaveBalance) {
-        await apiService.makeAuthenticatedRequest(`/api/users/${user.id}/leave-balance`, {
-          method: 'POST',
-          body: JSON.stringify({
-            annualLeaveChange: formData.annualLeaveBalance,
-            sickLeaveChange: formData.sickLeaveBalance
-          })
+        updatedUser = await apiService.updateStaffAllowance(user.id, {
+          annualLeaveBalance: formData.annualLeaveBalance,
+          sickLeaveBalance: formData.sickLeaveBalance
         });
+      } else {
+        // Fetch updated user data if no leave balance changes
+        updatedUser = await apiService.makeAuthenticatedRequest<UserProfile>(`/api/users/${user.id}`);
       }
-
-      // Fetch updated user data
-      const updatedUser = await apiService.makeAuthenticatedRequest<UserProfile>(`/api/users/${user.id}`);
       
       showSuccess('User updated successfully!');
       onUserUpdated(updatedUser);
@@ -253,7 +252,10 @@ const EditUserForm: React.FC<EditUserFormProps> = ({ user, onUserUpdated, onCanc
               {/* Annual Leave Balance */}
               <div>
                 <label htmlFor="annualLeaveBalance" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Annual Leave Balance (days)
+                  Annual Leave Allowance (days)
+                  <span className="ml-2 text-xs text-gray-500 dark:text-gray-400">
+                    (Company default: {companySettings.getDefaultAnnualLeaveAllowance()})
+                  </span>
                 </label>
                 <input
                   type="number"
@@ -262,10 +264,14 @@ const EditUserForm: React.FC<EditUserFormProps> = ({ user, onUserUpdated, onCanc
                   value={formData.annualLeaveBalance}
                   onChange={handleInputChange}
                   min="0"
+                  placeholder={companySettings.getDefaultAnnualLeaveAllowance().toString()}
                   className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white ${
                     errors.annualLeaveBalance ? 'border-red-500' : 'border-gray-300'
                   }`}
                 />
+                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                  Current balance for this user. Leave empty to use company default.
+                </p>
                 {errors.annualLeaveBalance && (
                   <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.annualLeaveBalance}</p>
                 )}
@@ -274,7 +280,10 @@ const EditUserForm: React.FC<EditUserFormProps> = ({ user, onUserUpdated, onCanc
               {/* Sick Leave Balance */}
               <div>
                 <label htmlFor="sickLeaveBalance" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Sick Leave Balance (days)
+                  Sick Leave Allowance (days)
+                  <span className="ml-2 text-xs text-gray-500 dark:text-gray-400">
+                    (Company default: {companySettings.getDefaultSickLeaveAllowance()})
+                  </span>
                 </label>
                 <input
                   type="number"
@@ -283,10 +292,14 @@ const EditUserForm: React.FC<EditUserFormProps> = ({ user, onUserUpdated, onCanc
                   value={formData.sickLeaveBalance}
                   onChange={handleInputChange}
                   min="0"
+                  placeholder={companySettings.getDefaultSickLeaveAllowance().toString()}
                   className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white ${
                     errors.sickLeaveBalance ? 'border-red-500' : 'border-gray-300'
                   }`}
                 />
+                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                  Current balance for this user. Leave empty to use company default.
+                </p>
                 {errors.sickLeaveBalance && (
                   <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.sickLeaveBalance}</p>
                 )}

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useToast } from '../contexts/ToastContext';
 import { apiService, ApiError } from '../services/api';
+import { companySettings } from '../services/company-settings';
 import Header from '../components/Header';
 import Card from '../components/Card';
 
@@ -34,8 +35,8 @@ export default function AddStaffPage() {
     email: '',
     role: '',
     password: '',
-    annualLeaveBalance: 25,
-    sickLeaveBalance: 10
+    annualLeaveBalance: companySettings.getDefaultAnnualLeaveAllowance(),
+    sickLeaveBalance: companySettings.getDefaultSickLeaveAllowance()
   });
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -422,7 +423,10 @@ export default function AddStaffPage() {
                 {/* Annual Leave Balance Field */}
                 <div>
                   <label htmlFor="annualLeaveBalance" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Annual Leave Balance (days)
+                    Annual Leave Allowance (days)
+                    <span className="text-xs text-gray-500 dark:text-gray-400 ml-2">
+                      Company default: {companySettings.getDefaultAnnualLeaveAllowance()}
+                    </span>
                   </label>
                   <input
                     type="number"
@@ -434,17 +438,23 @@ export default function AddStaffPage() {
                     className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white ${
                       errors.annualLeaveBalance ? 'border-red-500' : 'border-gray-300'
                     }`}
-                    placeholder="25"
+                    placeholder={companySettings.getDefaultAnnualLeaveAllowance().toString()}
                   />
                   {errors.annualLeaveBalance && (
                     <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.annualLeaveBalance}</p>
                   )}
+                  <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                    Leave blank to use company default or enter custom amount
+                  </p>
                 </div>
 
                 {/* Sick Leave Balance Field */}
                 <div>
                   <label htmlFor="sickLeaveBalance" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Sick Leave Balance (days)
+                    Sick Leave Allowance (days)
+                    <span className="text-xs text-gray-500 dark:text-gray-400 ml-2">
+                      Company default: {companySettings.getDefaultSickLeaveAllowance()}
+                    </span>
                   </label>
                   <input
                     type="number"
@@ -456,11 +466,14 @@ export default function AddStaffPage() {
                     className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white ${
                       errors.sickLeaveBalance ? 'border-red-500' : 'border-gray-300'
                     }`}
-                    placeholder="10"
+                    placeholder={companySettings.getDefaultSickLeaveAllowance().toString()}
                   />
                   {errors.sickLeaveBalance && (
                     <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.sickLeaveBalance}</p>
                   )}
+                  <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                    Leave blank to use company default or enter custom amount
+                  </p>
                 </div>
 
                 </div>

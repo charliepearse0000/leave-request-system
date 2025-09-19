@@ -8,6 +8,7 @@ import { useToast } from './contexts/ToastContext';
 import Header from './components/Header';
 import Card from './components/Card';
 import LoginForm from './components/LoginForm';
+import { companySettings } from './services/company-settings';
 
 
 interface User {
@@ -138,7 +139,9 @@ export default function Home() {
                     <div className="flex items-center justify-between">
                       <div>
                         <h3 className="text-sm font-medium text-blue-800 dark:text-blue-200">Annual Leave</h3>
-                        <p className="text-2xl font-bold text-blue-900 dark:text-blue-100">{balance.annualLeaveBalance}</p>
+                        <p className="text-2xl font-bold text-blue-900 dark:text-blue-100">
+                          {balance.annualLeaveBalance}/{companySettings.getDefaultAnnualLeaveAllowance()}
+                        </p>
                         <p className="text-sm text-blue-600 dark:text-blue-300">days remaining</p>
                       </div>
                       <div className="text-blue-500">
@@ -152,7 +155,9 @@ export default function Home() {
                     <div className="flex items-center justify-between">
                       <div>
                         <h3 className="text-sm font-medium text-green-800 dark:text-green-200">Sick Leave</h3>
-                        <p className="text-2xl font-bold text-green-900 dark:text-green-100">{balance.sickLeaveBalance}</p>
+                        <p className="text-2xl font-bold text-green-900 dark:text-green-100">
+                          {balance.sickLeaveBalance}/{companySettings.getDefaultSickLeaveAllowance()}
+                        </p>
                         <p className="text-sm text-green-600 dark:text-green-300">days remaining</p>
                       </div>
                       <div className="text-green-500">
@@ -273,6 +278,34 @@ export default function Home() {
                     <div className="ml-4">
                       <Card.Title>Manage Users</Card.Title>
                       <Card.Description>Manage users, roles, and create new staff accounts</Card.Description>
+                    </div>
+                    <Card.Arrow />
+                  </div>
+                </Card.Content>
+              </Card>
+            )}
+
+            {/* Admin-only Company Settings Card */}
+            {user.role === 'admin' && (
+              <Card 
+                onClick={() => router.push('/company-settings')}
+                variant="clickable"
+                borderColor="indigo"
+              >
+                <Card.Content>
+                  <div className="flex items-center">
+                    <Card.Icon 
+                      color="indigo"
+                      icon={
+                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                      }
+                    />
+                    <div className="ml-4">
+                      <Card.Title>Company Settings</Card.Title>
+                      <Card.Description>Configure company-wide leave allowances and settings</Card.Description>
                     </div>
                     <Card.Arrow />
                   </div>

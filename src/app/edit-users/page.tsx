@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useToast } from '../contexts/ToastContext';
 import { apiService, UserProfile } from '../services/api';
+import { companySettings } from '../services/company-settings';
 import Header from '../components/Header';
 import EditUserForm from '../components/EditUserForm';
 import Card from '../components/Card';
@@ -22,7 +23,7 @@ export default function EditUsersPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState('all');
   const [sortConfig, setSortConfig] = useState<{key: string, direction: 'asc' | 'desc'} | null>(null);
-  const { showError } = useToast();
+  const { showError, showSuccess } = useToast();
   const router = useRouter();
 
   useEffect(() => {
@@ -80,6 +81,8 @@ export default function EditUsersPage() {
     }
     setSortConfig({ key, direction });
   };
+
+
 
   const filteredUsers = users
     .filter(user => {
@@ -238,6 +241,8 @@ export default function EditUsersPage() {
                   </div>
                 </div>
               </div>
+
+
 
               {/* Quick Stats */}
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
@@ -411,7 +416,7 @@ export default function EditUsersPage() {
                     </thead>
                     <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-600">
                       {filteredUsers.map((user) => (
-                        <tr key={user.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                        <tr key={user.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="text-sm font-medium text-gray-900 dark:text-white">
                               {user.firstName} {user.lastName}
@@ -427,11 +432,15 @@ export default function EditUsersPage() {
                               {user.role.name.charAt(0).toUpperCase() + user.role.name.slice(1)}
                             </span>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                            {user.annualLeaveBalance} days
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-sm text-gray-900 dark:text-white">
+                              {user.annualLeaveBalance}/{companySettings.getDefaultAnnualLeaveAllowance()} days
+                            </div>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                            {user.sickLeaveBalance} days
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-sm text-gray-900 dark:text-white">
+                              {user.sickLeaveBalance}/{companySettings.getDefaultSickLeaveAllowance()} days
+                            </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                             <button

@@ -325,6 +325,20 @@ class ApiService {
     // Return the updated user data
     return this.makeAuthenticatedRequest<UserProfile>(`/api/users/${newUser.id}`);
   }
+
+  // Method to update staff allowances (leave balances)
+  async updateStaffAllowance(staffId: string, annualLeaveBalance: number, sickLeaveBalance: number): Promise<UserProfile> {
+    await this.makeAuthenticatedRequest(`/api/users/${staffId}/leave-balance`, {
+      method: 'POST',
+      body: JSON.stringify({
+        annualLeaveChange: annualLeaveBalance,
+        sickLeaveChange: sickLeaveBalance
+      }),
+    });
+
+    // Return the updated user data
+    return this.makeAuthenticatedRequest<UserProfile>(`/api/users/${staffId}`);
+  }
 }
 
 // Export singleton instance
