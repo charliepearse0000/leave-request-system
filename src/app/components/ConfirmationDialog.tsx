@@ -10,7 +10,8 @@ interface ConfirmationDialogProps {
   confirmText?: string;
   cancelText?: string;
   onConfirm: () => void;
-  onCancel: () => void;
+  onClose: () => void;
+  confirmButtonClass?: string;
   variant?: 'danger' | 'warning' | 'info';
 }
 
@@ -19,9 +20,10 @@ const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
   title,
   message,
   confirmText = 'Confirm',
-  cancelText = 'Cancel',
+  cancelText = 'Go Back',
   onConfirm,
-  onCancel,
+  onClose,
+  confirmButtonClass,
   variant = 'warning'
 }) => {
   if (!isOpen) return null;
@@ -59,7 +61,7 @@ const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
         {/* Background overlay */}
         <div 
           className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"
-          onClick={onCancel}
+          onClick={onClose}
         ></div>
 
         {/* Center the modal */}
@@ -87,7 +89,7 @@ const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
           <div className="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
             <button
               type="button"
-              className={`w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 text-base font-medium text-white ${styles.confirmButton} focus:outline-none focus:ring-2 focus:ring-offset-2 sm:ml-3 sm:w-auto sm:text-sm`}
+              className={`w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 text-base font-medium text-white ${confirmButtonClass || styles.confirmButton} focus:outline-none focus:ring-2 focus:ring-offset-2 sm:ml-3 sm:w-auto sm:text-sm`}
               onClick={onConfirm}
             >
               {confirmText}
@@ -95,7 +97,7 @@ const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
             <button
               type="button"
               className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:w-auto sm:text-sm"
-              onClick={onCancel}
+              onClick={onClose}
             >
               {cancelText}
             </button>

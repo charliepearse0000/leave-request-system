@@ -295,19 +295,34 @@ export default function AddStaffPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
-      <Header title="Add Staff Form" backButtonPath="/" />
+      <Header title="Add Staff" />
       
-      <main className="max-w-2xl mx-auto py-6 sm:px-6 lg:px-8">
+      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div className="px-4 py-6 sm:px-0">
+          {/* Page Header */}
+          <div className="mb-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+                  Add Staff
+                </h1>
+                <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                  Create a new employee account with role and leave balance settings
+                </p>
+              </div>
+              <button
+                onClick={() => router.push('/')}
+                className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600"
+              >
+                <svg className="-ml-1 mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+                Back to Dashboard
+              </button>
+            </div>
+          </div>
+
           <Card variant="default">
-            <Card.Header>
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-                Add New Staff Member
-              </h2>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                Fill in the details below to create a new employee account.
-              </p>
-            </Card.Header>
             
             <Card.Content className="px-6 py-6">
               <form onSubmit={handleSubmit} className="space-y-6">

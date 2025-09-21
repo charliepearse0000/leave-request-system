@@ -101,11 +101,24 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
-      <Header title="Leave Request System" />
+      <Header title="Dashboard" />
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div className="px-4 py-6 sm:px-0">
+          {/* Page Header */}
+          <div className="mb-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+                  Dashboard
+                </h1>
+                <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                  Welcome back, {user.firstName}! Manage your leave requests and view your balance.
+                </p>
+              </div>
+            </div>
+          </div>
           {/* Leave Balance Display */}
           <Card variant="default" className="mb-6">
             <Card.Header>
@@ -245,7 +258,7 @@ export default function Home() {
             {/* Approve Requests Card (Manager/Admin only) */}
             {(user.role === 'manager' || user.role === 'admin') && (
               <Card 
-                onClick={() => router.push('/requests?view=approve')}
+                onClick={() => router.push('/approve-requests')}
                 variant="clickable"
                 borderColor="yellow"
               >

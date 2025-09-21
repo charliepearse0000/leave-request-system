@@ -107,9 +107,6 @@ export default function Header({
                 <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
                   Leave Management System
                 </h1>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  {title}
-                </p>
               </div>
             </div>
 
