@@ -212,6 +212,11 @@ class ApiService {
     return this.makeAuthenticatedRequest<LeaveRequest[]>('/api/leave-requests/for-approval');
   }
 
+  // Method to fetch all company leave requests (admin only)
+  async getAllCompanyLeaveRequests(): Promise<LeaveRequest[]> {
+    return this.makeAuthenticatedRequest<LeaveRequest[]>('/api/leave-requests/all');
+  }
+
   async approveLeaveRequest(requestId: string): Promise<void> {
     return this.makeAuthenticatedRequest<void>(`/api/leave-requests/${requestId}/approve`, {
       method: 'PUT'

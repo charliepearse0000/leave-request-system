@@ -237,26 +237,33 @@ export default function Home() {
               </Card.Content>
             </Card>
 
-            {/* Pending Leave Requests Card (Manager) */}
-            <Card 
-              onClick={() => router.push('/requests')}
-              variant="clickable"
-              borderColor="yellow"
-            >
-              <Card.Content>
-                <div className="flex items-center">
-                  <Card.Icon 
-                    color="yellow"
-                    icon={<ClockIcon className="w-6 h-6" />}
-                  />
-                  <div className="ml-4">
-                    <Card.Title>Pending Leave Requests</Card.Title>
-                    <Card.Description>Review and approve team requests</Card.Description>
+            {/* Approve Requests Card (Manager/Admin only) */}
+            {(user.role === 'manager' || user.role === 'admin') && (
+              <Card 
+                onClick={() => router.push('/requests?view=approve')}
+                variant="clickable"
+                borderColor="yellow"
+              >
+                <Card.Content>
+                  <div className="flex items-center">
+                    <Card.Icon 
+                      color="yellow"
+                      icon={<ClockIcon className="w-6 h-6" />}
+                    />
+                    <div className="ml-4">
+                      <Card.Title>Approve Requests</Card.Title>
+                      <Card.Description>
+                        {user.role === 'admin' 
+                          ? 'Review and approve all company requests' 
+                          : 'Review and approve team requests'
+                        }
+                      </Card.Description>
+                    </div>
+                    <Card.Arrow />
                   </div>
-                  <Card.Arrow />
-                </div>
-              </Card.Content>
-            </Card>
+                </Card.Content>
+              </Card>
+            )}
 
             {/* Admin-only Manage Users Card */}
             {user.role === 'admin' && (

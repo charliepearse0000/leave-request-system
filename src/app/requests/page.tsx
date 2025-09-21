@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { ClockIcon, CheckCircleIcon, XCircleIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { apiService, type LeaveRequest, type ApiError } from '../services/api';
 import ConfirmationDialog from '../components/ConfirmationDialog';
@@ -22,8 +22,11 @@ const LeaveRequestsPage = () => {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [requestToDelete, setRequestToDelete] = useState<string | null>(null);
+  const [isAdminView, setIsAdminView] = useState(false);
+  const [currentUser, setCurrentUser] = useState<any>(null);
   const { refreshBalance } = useBalance();
   const router = useRouter();
+  const searchParams = useSearchParams();
 
 
 
@@ -35,12 +38,51 @@ const LeaveRequestsPage = () => {
       return;
     }
 
+    // Get current user data
+    const userData = localStorage.getItem('userData');
+    if (userData) {
+      const user = JSON.parse(userData);
+      setCurrentUser(user);
+      
+      // Check if this is admin view
+      const viewParam = searchParams.get('view');
+      const isAdmin = user.role === 'admin';
+      const isManager = user.role === 'manager';
+      const shouldShowAdminView = (viewParam === 'all' || viewParam === 'approve') && (isAdmin || isManager);
+      setIsAdminView(shouldShowAdminView);
+    }
+
     // Fetch leave requests from API
     const fetchRequests = async () => {
       try {
         setLoading(true);
         setError(null);
-        const data = await apiService.getLeaveRequests();
+        
+        // Determine which API endpoint to use
+        const viewParam = searchParams.get('view');
+        const userData = localStorage.getItem('userData');
+        const user = userData ? JSON.parse(userData) : null;
+        const isAdmin = user?.role === 'admin';
+        const isManager = user?.role === 'manager';
+        
+        let data: LeaveRequest[];
+        if (viewParam === 'approve' && (isAdmin || isManager)) {
+          // Approve view - get requests that need approval
+          if (isAdmin) {
+            // Admin can see all company requests for approval
+            data = await apiService.getAllCompanyLeaveRequests();
+          } else {
+            // Manager sees their team's requests (using regular endpoint for now)
+            data = await apiService.getLeaveRequests();
+          }
+        } else if (viewParam === 'all' && isAdmin) {
+          // Admin view - get all company requests
+          data = await apiService.getAllCompanyLeaveRequests();
+        } else {
+          // Regular view - get user's own requests
+          data = await apiService.getLeaveRequests();
+        }
+        
         setRequests(data);
       } catch (err) {
         const apiError = err as ApiError;
@@ -58,7 +100,7 @@ const LeaveRequestsPage = () => {
     };
 
     fetchRequests();
-  }, [router]);
+  }, [router, searchParams]);
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {
@@ -193,10 +235,43 @@ const LeaveRequestsPage = () => {
     );
   }
 
+  // Get current view and user info for display
+  const viewParam = searchParams.get('view');
+  const userData = localStorage.getItem('userData');
+  const user = userData ? JSON.parse(userData) : null;
+  
+  const getPageTitle = () => {
+    if (viewParam === 'approve') {
+      return user?.role === 'admin' ? "Approve Company Requests" : "Approve Team Requests";
+    } else if (viewParam === 'all') {
+      return "All Company Leave Requests";
+    }
+    return "My Leave Requests";
+  };
+
+  const getViewIndicator = () => {
+    if (viewParam === 'approve') {
+      return {
+        title: user?.role === 'admin' ? "Admin Approval View" : "Manager Approval View",
+        description: user?.role === 'admin' 
+          ? "You are viewing all company requests that need approval."
+          : "You are viewing your team's requests that need approval."
+      };
+    } else if (viewParam === 'all') {
+      return {
+        title: "Admin View Active",
+        description: "You are viewing all company leave requests. This view is only available to administrators."
+      };
+    }
+    return null;
+  };
+
+  const viewIndicator = getViewIndicator();
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
       <Header 
-        title="My Leave Requests" 
+        title={getPageTitle()} 
         showBackButton={true}
         backButtonPath="/"
       />
@@ -204,6 +279,30 @@ const LeaveRequestsPage = () => {
       {/* Main Content */}
       <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div className="px-4 py-6 sm:px-0">
+          {/* View Indicator */}
+          {viewIndicator && (
+            <div className="mb-6">
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                <div className="flex items-center">
+                  <div className="flex-shrink-0">
+                    <div className="h-5 w-5 text-yellow-400">
+                      <svg fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                  </div>
+                  <div className="ml-3">
+                    <h3 className="text-sm font-medium text-yellow-800">
+                      {viewIndicator.title}
+                    </h3>
+                    <div className="mt-1 text-sm text-yellow-700">
+                      {viewIndicator.description}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
           {/* Filters */}
           <Card variant="default" className="mb-6">
             <Card.Content className="p-6">
@@ -303,9 +402,11 @@ const LeaveRequestsPage = () => {
                         <span className="ml-1">{sortDirection === 'asc' ? '↑' : '↓'}</span>
                       )}
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Actions
-                    </th>
+                    {!isAdminView && (
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Actions
+                      </th>
+                    )}
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
@@ -338,20 +439,22 @@ const LeaveRequestsPage = () => {
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {new Date(request.submittedAt).toLocaleDateString()}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        <button
-                          onClick={() => handleCancelRequest(request.id)}
-                          disabled={cancellingIds.has(request.id)}
-                          className="inline-flex items-center gap-1 px-3 py-1 text-xs font-medium text-red-600 bg-red-50 border border-red-200 rounded-md hover:bg-red-100 hover:text-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                        >
-                          {cancellingIds.has(request.id) ? (
-                            <span className="animate-spin h-3 w-3 border border-red-600 border-t-transparent rounded-full"></span>
-                          ) : (
-                            <XMarkIcon className="h-3 w-3" />
-                          )}
-                          {cancellingIds.has(request.id) ? 'Deleting...' : 'Delete'}
-                        </button>
-                      </td>
+                      {!isAdminView && (
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          <button
+                            onClick={() => handleCancelRequest(request.id)}
+                            disabled={cancellingIds.has(request.id)}
+                            className="inline-flex items-center gap-1 px-3 py-1 text-xs font-medium text-red-600 bg-red-50 border border-red-200 rounded-md hover:bg-red-100 hover:text-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                          >
+                            {cancellingIds.has(request.id) ? (
+                              <span className="animate-spin h-3 w-3 border border-red-600 border-t-transparent rounded-full"></span>
+                            ) : (
+                              <XMarkIcon className="h-3 w-3" />
+                            )}
+                            {cancellingIds.has(request.id) ? 'Deleting...' : 'Delete'}
+                          </button>
+                        </td>
+                      )}
                     </tr>
                   ))}
                 </tbody>
