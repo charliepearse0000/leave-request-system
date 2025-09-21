@@ -92,17 +92,14 @@ export default function LoginForm() {
       
       const response = await apiService.login(loginRequest);
       
-      // Store the JWT token and user data
       localStorage.setItem('authToken', response.token);
       localStorage.setItem('userData', JSON.stringify(response.user));
+      setSuccessMessage('Login successful!');
       
-      // Show success message
-      setSuccessMessage('Login successful! Redirecting to dashboard...');
-      
-      // Redirect to dashboard after a short delay
+      router.push('/');
       setTimeout(() => {
-        router.push('/');
-      }, 1500);
+        window.location.reload();
+      }, 100);
       
     } catch (error) {
       console.error('Login failed:', error);

@@ -34,6 +34,10 @@ class CompanySettingsService {
 
   private loadSettings(): void {
     try {
+      if (typeof window === 'undefined') {
+        return;
+      }
+      
       const stored = localStorage.getItem('companySettings');
       if (stored) {
         this.settings = { ...this.settings, ...JSON.parse(stored) };
@@ -45,6 +49,11 @@ class CompanySettingsService {
 
   private saveSettings(): void {
     try {
+      // Check if we're in a browser environment
+      if (typeof window === 'undefined') {
+        return;
+      }
+      
       localStorage.setItem('companySettings', JSON.stringify(this.settings));
     } catch (error) {
       console.warn('Failed to save company settings to localStorage:', error);

@@ -73,7 +73,11 @@ export default function Header({
   const handleLogout = () => {
     localStorage.removeItem('authToken');
     localStorage.removeItem('userData');
+    setCurrentUser(null);
     router.push('/');
+    setTimeout(() => {
+      window.location.reload();
+    }, 100);
   };
 
   const isManager = currentUser?.role === 'manager';

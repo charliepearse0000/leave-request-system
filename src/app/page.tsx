@@ -30,6 +30,11 @@ export default function Home() {
 
   useEffect(() => {
     const checkAuth = async () => {
+      if (typeof window === 'undefined') {
+        setLoading(false);
+        return;
+      }
+      
       const token = localStorage.getItem('authToken');
       const userData = localStorage.getItem('userData');
       
