@@ -84,12 +84,19 @@ export class UserService {
 
   async assignRole(userId: string, roleId: string): Promise<User> {
     try {
-      const user = await this.userRepository.findOneOrFail({ where: { id: userId } });
-      const role = await this.roleRepository.findOneOrFail({ where: { id: roleId } });
+      // Use query builder to update the role directly in the database
+      await this.userRepository
+        .createQueryBuilder()
+        .update(User)
+        .set({ roleId: roleId })
+        .where("id = :id", { id: userId })
+        .execute();
       
-      user.roleId = role.id;
-      
-      return await this.userRepository.save(user);
+      // Return the user with updated role relation
+      return await this.userRepository.findOneOrFail({
+        where: { id: userId },
+        relations: ['role', 'manager', 'directReports']
+      });
     } catch (error) {
       logger.error(`Error assigning role ${roleId} to user ${userId}`, { error });
       throw error;
@@ -133,4 +140,4 @@ export class UserService {
       throw error;
     }
   }
-} 
+}

@@ -24,7 +24,8 @@ export class AuthController {
     body('email').isEmail().withMessage('Valid email is required'),
     body('password')
       .isLength({ min: 6 })
-      .withMessage('Password must be at least 6 characters long')
+      .withMessage('Password must be at least 6 characters long'),
+    body('roleId').optional().isUUID().withMessage('Valid role ID is required')
   ];
 
   loginValidation = [
@@ -34,14 +35,20 @@ export class AuthController {
 
   register = async (req: Request, res: Response): Promise<void> => {
     try {
-      const { firstName, lastName, email, password } = req.body;
+      const { firstName, lastName, email, password, roleId } = req.body;
       
-      // Get default employee role
-      const roles = await this.roleService.getAllRoles();
-      const employeeRole = roles.find(role => role.name === RoleType.EMPLOYEE);
+      let finalRoleId = roleId;
       
-      if (!employeeRole) {
-        throw new Error('Default employee role not found');
+      // If no roleId provided, use default employee role
+      if (!roleId) {
+        const roles = await this.roleService.getAllRoles();
+        const employeeRole = roles.find(role => role.name === RoleType.EMPLOYEE);
+        
+        if (!employeeRole) {
+          throw new Error('Default employee role not found');
+        }
+        
+        finalRoleId = employeeRole.id;
       }
       
       const userData = {
@@ -49,7 +56,7 @@ export class AuthController {
         lastName,
         email,
         password,
-        roleId: employeeRole.id
+        roleId: finalRoleId
       };
       
       const user = await this.authService.register(userData as any);
@@ -117,4 +124,4 @@ export class AuthController {
   };
 }
 
-export const authController = new AuthController(); 
+export const authController = new AuthController();
