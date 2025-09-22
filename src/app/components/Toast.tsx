@@ -140,7 +140,6 @@ const Toast = ({ id, type, title, message, duration = 5000, onClose }: ToastProp
         </div>
       </div>
       
-      {/* Progress bar */}
       {duration > 0 && (
         <div className="h-1 bg-gray-200 bg-opacity-50">
           <div 

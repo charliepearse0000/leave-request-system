@@ -320,10 +320,8 @@ const LeaveRequestsPage = () => {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
       <Header title={getPageTitle()} />
 
-      {/* Main Content */}
       <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div className="px-4 py-6 sm:px-0">
-          {/* Page Header */}
           <div className="mb-6">
             <div className="flex items-center justify-between">
               <div>
@@ -351,7 +349,7 @@ const LeaveRequestsPage = () => {
             </div>
           </div>
 
-          {/* View Indicator */}
+)}
           {viewIndicator && (
             <div className="mb-6">
               <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
@@ -375,7 +373,6 @@ const LeaveRequestsPage = () => {
               </div>
             </div>
           )}
-          {/* Filters and Search */}
           <Card variant="default" className="mb-6">
               <div className="px-6 py-4 flex flex-col sm:flex-row gap-4">
                 <div className="flex-1">
@@ -403,7 +400,6 @@ const LeaveRequestsPage = () => {
               </div>
           </Card>
 
-          {/* Table */}
           <Card variant="default">
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-600">
@@ -602,9 +598,9 @@ const LeaveRequestsPage = () => {
       <ConfirmationDialog
         isOpen={showConfirmDialog}
         title="Cancel Leave Request"
-        message="Are you sure you want to cancel this leave request?"
-        confirmText="Cancel"
-        cancelText="Keep Request"
+        message="Are you sure you want to cancel this leave request? This action cannot be undone and your request will be permanently cancelled."
+        confirmText="Yes, Cancel Request"
+        cancelText="No, Keep Request"
         onConfirm={confirmDeleteRequest}
         onClose={cancelDeleteRequest}
         variant="danger"

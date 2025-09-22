@@ -26,9 +26,9 @@ const ApproveRequestsPage = () => {
   
 
   
-  // Individual comments state
-  const [approveComments, setApproveComments] = useState('');
-  const [rejectComments, setRejectComments] = useState('');
+  // Individual comments state - remove these as they're now handled by ConfirmationDialog
+  // const [approveComments, setApproveComments] = useState('');
+  // const [rejectComments, setRejectComments] = useState('');
   
 
   
@@ -115,11 +115,11 @@ const ApproveRequestsPage = () => {
     setShowRejectDialog(true);
   };
 
-  const confirmApproveRequest = async () => {
+  const confirmApproveRequest = async (comments?: string) => {
     if (!requestToApprove) return;
 
     try {
-      await apiService.approveLeaveRequest(requestToApprove.id, approveComments || undefined);
+      await apiService.approveLeaveRequest(requestToApprove.id, comments || undefined);
       
       // Update the request in the local state
       setRequests(prevRequests =>
@@ -132,17 +132,16 @@ const ApproveRequestsPage = () => {
       
       setShowApproveDialog(false);
       setRequestToApprove(null);
-      setApproveComments('');
     } catch (err) {
       alert('Failed to approve request. Please try again.');
     }
   };
 
-  const confirmRejectRequest = async () => {
+  const confirmRejectRequest = async (comments?: string) => {
     if (!requestToReject) return;
 
     try {
-      await apiService.rejectLeaveRequest(requestToReject.id, rejectComments || undefined);
+      await apiService.rejectLeaveRequest(requestToReject.id, comments || undefined);
       
       // Update the request in the local state
       setRequests(prevRequests =>
@@ -155,7 +154,6 @@ const ApproveRequestsPage = () => {
       
       setShowRejectDialog(false);
       setRequestToReject(null);
-      setRejectComments('');
     } catch (err) {
       alert('Failed to reject request. Please try again.');
     }
@@ -272,11 +270,9 @@ const ApproveRequestsPage = () => {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
       <Header title="Approve Leave Requests" />
 
-      {/* Main Content */}
       <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div className="px-4 py-6 sm:px-0">
 
-          {/* Page Header */}
           <div className="mb-6">
             <div className="flex items-center justify-between">
               <div>
@@ -309,7 +305,6 @@ const ApproveRequestsPage = () => {
           </Card>
         )}
 
-        {/* Filters and Search */}
         <Card variant="default" className="mb-6">
           <Card.Content>
             <div className="flex flex-col sm:flex-row gap-4">
@@ -341,7 +336,6 @@ const ApproveRequestsPage = () => {
 
 
 
-        {/* Requests Table */}
         <Card variant="default">
           {filteredAndSortedRequests.length === 0 ? (
             <div className="text-center py-12">
@@ -584,97 +578,39 @@ const ApproveRequestsPage = () => {
         </Card>
       </div>
 
-      {/* Individual Approve Dialog */}
-      {showApproveDialog && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white dark:bg-gray-800">
-            <div className="mt-3">
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
-                Approve Leave Request
-              </h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                Are you sure you want to approve the leave request from {requestToApprove?.user.firstName} {requestToApprove?.user.lastName}?
-              </p>
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Comments (optional)
-                </label>
-                <textarea
-                  value={approveComments}
-                  onChange={(e) => setApproveComments(e.target.value)}
-                  rows={3}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                  placeholder="Add comments for this approval..."
-                />
-              </div>
-              <div className="flex gap-3">
-                <button
-                  onClick={confirmApproveRequest}
-                  className="flex-1 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"
-                >
-                  Approve
-                </button>
-                <button
-                  onClick={() => {
-                    setShowApproveDialog(false);
-                    setRequestToApprove(null);
-                    setApproveComments('');
-                  }}
-                  className="flex-1 px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500"
-                >
-                  Keep Pending
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      <ConfirmationDialog
+        isOpen={showApproveDialog}
+        title="Approve Leave Request"
+        message={`Are you sure you want to approve the leave request from ${requestToApprove?.user.firstName} ${requestToApprove?.user.lastName}?`}
+        confirmText="Yes, Approve"
+        cancelText="No, Keep Pending"
+        onConfirm={confirmApproveRequest}
+        onClose={() => {
+          setShowApproveDialog(false);
+          setRequestToApprove(null);
+        }}
+        variant="success"
+        showComments={true}
+        commentsLabel="Comments (optional)"
+        commentsPlaceholder="Add comments for this approval..."
+      />
 
-      {/* Individual Reject Dialog */}
-      {showRejectDialog && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white dark:bg-gray-800">
-            <div className="mt-3">
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
-                Reject Leave Request
-              </h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                Are you sure you want to reject the leave request from {requestToReject?.user.firstName} {requestToReject?.user.lastName}?
-              </p>
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Comments (optional)
-                </label>
-                <textarea
-                  value={rejectComments}
-                  onChange={(e) => setRejectComments(e.target.value)}
-                  rows={3}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                  placeholder="Add comments for this rejection..."
-                />
-              </div>
-              <div className="flex gap-3">
-                <button
-                  onClick={confirmRejectRequest}
-                  className="flex-1 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
-                >
-                  Reject
-                </button>
-                <button
-                  onClick={() => {
-                    setShowRejectDialog(false);
-                    setRequestToReject(null);
-                    setRejectComments('');
-                  }}
-                  className="flex-1 px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500"
-                >
-                  Keep Pending
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      <ConfirmationDialog
+        isOpen={showRejectDialog}
+        title="Reject Leave Request"
+        message={`Are you sure you want to reject the leave request from ${requestToReject?.user.firstName} ${requestToReject?.user.lastName}?`}
+        confirmText="Yes, Reject"
+        cancelText="No, Keep Pending"
+        onConfirm={confirmRejectRequest}
+        onClose={() => {
+          setShowRejectDialog(false);
+          setRequestToReject(null);
+        }}
+        variant="danger"
+        showComments={true}
+        commentsLabel="Comments (optional)"
+        commentsPlaceholder="Add comments for this rejection..."
+      />
 
       </main>
     </div>

@@ -8,6 +8,12 @@ import { companySettings } from '../services/company-settings';
 import Header from '../components/Header';
 import Card from '../components/Card';
 
+interface Role {
+  id: string;
+  name: string;
+  description: string;
+}
+
 interface FormData {
   firstName: string;
   lastName: string;
@@ -42,6 +48,8 @@ export default function AddStaffPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [roles, setRoles] = useState<Role[]>([]);
+  const [rolesLoading, setRolesLoading] = useState(true);
   const { showSuccess, showError } = useToast();
   const router = useRouter();
 
@@ -58,8 +66,10 @@ export default function AddStaffPage() {
       
       try {
         const user = JSON.parse(userData);
-        // Check if user has admin role
-        if (user.role !== 'admin') {
+        
+        const userRole = typeof user.role === 'string' ? user.role : user.role?.name;
+        
+        if (userRole !== 'admin') {
           showError('Access denied. Admin privileges required.');
           router.push('/');
           return;
@@ -77,24 +87,38 @@ export default function AddStaffPage() {
     checkAuth();
   }, [router, showError]);
 
+  useEffect(() => {
+    const fetchRoles = async () => {
+      if (isAuthenticated) {
+        try {
+          const rolesData = await apiService.getRoles();
+          setRoles(rolesData);
+        } catch (error) {
+          showError('Failed to load roles', 'Please refresh the page to try again.');
+        } finally {
+          setRolesLoading(false);
+        }
+      }
+    };
+
+    fetchRoles();
+  }, [isAuthenticated, showError]);
+
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
 
-    // First name validation
     if (!formData.firstName.trim()) {
       newErrors.firstName = 'First name is required';
     } else if (formData.firstName.trim().length < 2) {
       newErrors.firstName = 'First name must be at least 2 characters';
     }
 
-    // Last name validation
     if (!formData.lastName.trim()) {
       newErrors.lastName = 'Last name is required';
     } else if (formData.lastName.trim().length < 2) {
       newErrors.lastName = 'Last name must be at least 2 characters';
     }
 
-    // Email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!formData.email.trim()) {
       newErrors.email = 'Email is required';
@@ -102,24 +126,20 @@ export default function AddStaffPage() {
       newErrors.email = 'Please enter a valid email address';
     }
 
-    // Password validation
     if (!formData.password.trim()) {
       newErrors.password = 'Password is required';
     } else if (formData.password.length < 6) {
       newErrors.password = 'Password must be at least 6 characters';
     }
 
-    // Role validation
     if (!formData.role) {
       newErrors.role = 'Role selection is required';
     }
 
-    // Annual leave balance validation
     if (formData.annualLeaveBalance < 0) {
       newErrors.annualLeaveBalance = 'Annual leave balance cannot be negative';
     }
 
-    // Sick leave balance validation
     if (formData.sickLeaveBalance < 0) {
       newErrors.sickLeaveBalance = 'Sick leave balance cannot be negative';
     }
@@ -137,7 +157,6 @@ export default function AddStaffPage() {
       [name]: processedValue
     }));
     
-    // Clear error when user starts typing
     if (errors[name as keyof FormErrors]) {
       setErrors(prev => ({
         ...prev,
@@ -156,32 +175,25 @@ export default function AddStaffPage() {
     setIsSubmitting(true);
     
     try {
-      // Map role to roleId (using actual UUIDs from the backend)
-      const roleIdMap: { [key: string]: string } = {
-        'employee': '5596b6ac-2059-4a6f-8522-4180c3c82e1a',
-        'manager': '41bf908b-d1d1-4498-b1b0-55998caa4ce4', 
-        'admin': '0be2f8ec-7b36-4e3e-8f59-07630da7a0b5'
-      };
-
       const staffData = {
         firstName: formData.firstName.trim(),
         lastName: formData.lastName.trim(),
         email: formData.email.trim(),
         password: formData.password,
-        roleId: roleIdMap[formData.role],
+        roleId: formData.role,
         annualLeaveBalance: formData.annualLeaveBalance,
         sickLeaveBalance: formData.sickLeaveBalance
       };
 
       const result = await apiService.createStaff(staffData);
       
-      // Enhanced success feedback with detailed confirmation
+      const selectedRole = roles.find(r => r.id === formData.role);
+      const roleName = selectedRole ? selectedRole.name : 'Unknown Role';
       showSuccess(
         '🎉 Staff Member Successfully Created!', 
-        `${staffData.firstName} ${staffData.lastName} has been added as ${formData.role.charAt(0).toUpperCase() + formData.role.slice(1)} with ${staffData.annualLeaveBalance} annual leave days and ${staffData.sickLeaveBalance} sick leave days. Login credentials have been set up.`
+        `${staffData.firstName} ${staffData.lastName} has been added as ${roleName} with ${staffData.annualLeaveBalance} annual leave days and ${staffData.sickLeaveBalance} sick leave days. Login credentials have been set up.`
       );
       
-      // Reset form with a slight delay for better UX
       setTimeout(() => {
         setFormData({
           firstName: '',
@@ -197,8 +209,6 @@ export default function AddStaffPage() {
       
     } catch (error) {
       const apiError = error as ApiError;
-      
-      // Enhanced error handling with specific feedback and recovery suggestions
       if (apiError.status === 400) {
         if (apiError.message.toLowerCase().includes('email already exists') || 
             apiError.message.toLowerCase().includes('user with this email')) {
@@ -290,7 +300,6 @@ export default function AddStaffPage() {
       
       <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div className="px-4 py-6 sm:px-0">
-          {/* Page Header */}
           <div className="mb-6">
             <div className="flex items-center justify-between">
               <div>
@@ -318,7 +327,6 @@ export default function AddStaffPage() {
             <Card.Content className="px-6 py-6">
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="space-y-4">
-                  {/* First Name Field */}
                 <div>
                   <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     First Name *
@@ -339,7 +347,6 @@ export default function AddStaffPage() {
                   )}
                 </div>
 
-                {/* Last Name Field */}
                 <div>
                   <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Last Name *
@@ -360,7 +367,6 @@ export default function AddStaffPage() {
                   )}
                 </div>
 
-                {/* Email Field */}
                 <div>
                   <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Email Address *
@@ -381,7 +387,6 @@ export default function AddStaffPage() {
                   )}
                 </div>
 
-                {/* Password Field */}
                 <div>
                   <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Password *
@@ -402,7 +407,6 @@ export default function AddStaffPage() {
                   )}
                 </div>
 
-                {/* Role Field */}
                 <div>
                   <label htmlFor="role" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Role *
@@ -412,21 +416,23 @@ export default function AddStaffPage() {
                     name="role"
                     value={formData.role}
                     onChange={handleInputChange}
+                    disabled={rolesLoading}
                     className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white ${
                       errors.role ? 'border-red-500' : 'border-gray-300'
-                    }`}
+                    } ${rolesLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
                   >
                     <option value="">Select a role</option>
-                    <option value="employee">Employee</option>
-                    <option value="manager">Manager</option>
-                    <option value="admin">Admin</option>
+                    {roles.map((role) => (
+                      <option key={role.id} value={role.id}>
+                        {role.name}
+                      </option>
+                    ))}
                   </select>
                   {errors.role && (
                     <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.role}</p>
                   )}
                 </div>
 
-                {/* Annual Leave Balance Field */}
                 <div>
                   <label htmlFor="annualLeaveBalance" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Annual Leave Allowance (days)
@@ -454,7 +460,6 @@ export default function AddStaffPage() {
                   </p>
                 </div>
 
-                {/* Sick Leave Balance Field */}
                 <div>
                   <label htmlFor="sickLeaveBalance" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Sick Leave Allowance (days)
@@ -484,7 +489,6 @@ export default function AddStaffPage() {
 
                 </div>
 
-                {/* Form Actions */}
                 <div className="flex justify-end space-x-3 pt-4">
                   <button
                     type="button"

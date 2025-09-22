@@ -19,7 +19,9 @@ export default function CompanySettingsPage() {
     const userData = localStorage.getItem('userData');
     if (userData) {
       const user = JSON.parse(userData);
-      if (user.role !== 'admin') {
+      // Handle both role formats: string (user.role) and object (user.role.name)
+      const userRole = typeof user.role === 'string' ? user.role : user.role?.name;
+      if (userRole !== 'admin') {
         router.push('/');
         return;
       }
@@ -75,7 +77,6 @@ export default function CompanySettingsPage() {
       
       <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div className="px-4 py-6 sm:px-0">
-          {/* Page Header */}
           <div className="mb-6">
           <div className="flex items-center justify-between">
             <div>
@@ -101,7 +102,6 @@ export default function CompanySettingsPage() {
             <div className="space-y-6">
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Annual Leave Default */}
               <div>
                 <label htmlFor="defaultAnnualLeaveAllowance" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Default Annual Leave Allowance (days)
@@ -121,7 +121,6 @@ export default function CompanySettingsPage() {
                 </p>
               </div>
 
-              {/* Sick Leave Default */}
               <div>
                 <label htmlFor="defaultSickLeaveAllowance" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Default Sick Leave Allowance (days)
@@ -142,7 +141,6 @@ export default function CompanySettingsPage() {
               </div>
             </div>
 
-            {/* Company Name */}
             <div className="mt-6">
               <label htmlFor="companyName" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Company Name
@@ -158,7 +156,6 @@ export default function CompanySettingsPage() {
               />
             </div>
 
-            {/* Allow Custom Allowances */}
             <div className="mt-6">
               <div className="flex items-center">
                 <input
@@ -178,7 +175,6 @@ export default function CompanySettingsPage() {
               </p>
             </div>
 
-            {/* Action Buttons */}
             <div className="mt-8 flex justify-end space-x-3">
               <button
                 type="button"
