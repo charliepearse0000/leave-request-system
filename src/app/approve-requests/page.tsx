@@ -20,7 +20,7 @@ const ApproveRequestsPage = () => {
   const [sortField, setSortField] = useState<SortField>('submittedAt');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'approved' | 'rejected' | 'cancelled'>('all');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'approved' | 'rejected' | 'cancelled'>('pending');
   
 
   
@@ -40,7 +40,7 @@ const ApproveRequestsPage = () => {
   const [requestToApprove, setRequestToApprove] = useState<LeaveRequest | null>(null);
   const [requestToReject, setRequestToReject] = useState<LeaveRequest | null>(null);
 
-  
+
 
   useEffect(() => {
     const token = localStorage.getItem('authToken');
@@ -346,8 +346,7 @@ const ApproveRequestsPage = () => {
 
         {/* Requests Table */}
         <Card variant="default">
-          <Card.Content>
-            {filteredAndSortedRequests.length === 0 ? (
+          {filteredAndSortedRequests.length === 0 ? (
             <div className="text-center py-12">
               <ClockIcon className="mx-auto h-12 w-12 text-gray-400" />
               <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">No requests found</h3>
@@ -357,68 +356,155 @@ const ApproveRequestsPage = () => {
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                <thead className="bg-gray-50 dark:bg-gray-800">
+              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-600">
+                <thead className="bg-gray-50 dark:bg-gray-700">
                   <tr>
-
-                    <th
-                      onClick={() => handleSort('user' as SortField)}
-                      className="px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 w-48"
-                    >
-                      Employee
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                      <button
+                        onClick={() => handleSort('user' as SortField)}
+                        className="flex items-center space-x-1 hover:text-gray-700 dark:hover:text-gray-100 transition-colors"
+                      >
+                        <span>Employee</span>
+                        <svg className={`w-4 h-4 transition-colors ${
+                          sortField === 'user' 
+                            ? 'text-blue-600 dark:text-blue-400' 
+                            : 'text-gray-400 dark:text-gray-500'
+                        }`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          {sortField === 'user' && sortDirection === 'desc' ? (
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                          ) : (
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                          )}
+                        </svg>
+                      </button>
                     </th>
-                    <th
-                      onClick={() => handleSort('leaveType' as SortField)}
-                      className="px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 w-28"
-                    >
-                      Leave Type
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                      <button
+                        onClick={() => handleSort('leaveType' as SortField)}
+                        className="flex items-center space-x-1 hover:text-gray-700 dark:hover:text-gray-100 transition-colors"
+                      >
+                        <span>Leave Type</span>
+                        <svg className={`w-4 h-4 transition-colors ${
+                          sortField === 'leaveType' 
+                            ? 'text-blue-600 dark:text-blue-400' 
+                            : 'text-gray-400 dark:text-gray-500'
+                        }`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          {sortField === 'leaveType' && sortDirection === 'desc' ? (
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                          ) : (
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                          )}
+                        </svg>
+                      </button>
                     </th>
-                    <th
-                      onClick={() => handleSort('startDate')}
-                      className="px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 w-28"
-                    >
-                      Start Date
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                      <button
+                        onClick={() => handleSort('startDate')}
+                        className="flex items-center space-x-1 hover:text-gray-700 dark:hover:text-gray-100 transition-colors"
+                      >
+                        <span>Start Date</span>
+                        <svg className={`w-4 h-4 transition-colors ${
+                          sortField === 'startDate' 
+                            ? 'text-blue-600 dark:text-blue-400' 
+                            : 'text-gray-400 dark:text-gray-500'
+                        }`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          {sortField === 'startDate' && sortDirection === 'desc' ? (
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                          ) : (
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                          )}
+                        </svg>
+                      </button>
                     </th>
-                    <th
-                      onClick={() => handleSort('endDate')}
-                      className="px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 w-28"
-                    >
-                      End Date
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                      <button
+                        onClick={() => handleSort('endDate')}
+                        className="flex items-center space-x-1 hover:text-gray-700 dark:hover:text-gray-100 transition-colors"
+                      >
+                        <span>End Date</span>
+                        <svg className={`w-4 h-4 transition-colors ${
+                          sortField === 'endDate' 
+                            ? 'text-blue-600 dark:text-blue-400' 
+                            : 'text-gray-400 dark:text-gray-500'
+                        }`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          {sortField === 'endDate' && sortDirection === 'desc' ? (
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                          ) : (
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                          )}
+                        </svg>
+                      </button>
                     </th>
-                    <th
-                      onClick={() => handleSort('days')}
-                      className="px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 w-16"
-                    >
-                      Days
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                      <button
+                        onClick={() => handleSort('duration')}
+                        className="flex items-center space-x-1 hover:text-gray-700 dark:hover:text-gray-100 transition-colors"
+                      >
+                        <span>Days</span>
+                        <svg className={`w-4 h-4 transition-colors ${
+                          sortField === 'duration' 
+                            ? 'text-blue-600 dark:text-blue-400' 
+                            : 'text-gray-400 dark:text-gray-500'
+                        }`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          {sortField === 'duration' && sortDirection === 'desc' ? (
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                          ) : (
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                          )}
+                        </svg>
+                      </button>
                     </th>
-                    <th
-                      onClick={() => handleSort('reason')}
-                      className="px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 w-48"
-                    >
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                       Reason
                     </th>
-                    <th
-                      onClick={() => handleSort('status')}
-                      className="px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 w-24"
-                    >
-                      Status
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                      <button
+                        onClick={() => handleSort('status')}
+                        className="flex items-center space-x-1 hover:text-gray-700 dark:hover:text-gray-100 transition-colors"
+                      >
+                        <span>Status</span>
+                        <svg className={`w-4 h-4 transition-colors ${
+                          sortField === 'status' 
+                            ? 'text-blue-600 dark:text-blue-400' 
+                            : 'text-gray-400 dark:text-gray-500'
+                        }`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          {sortField === 'status' && sortDirection === 'desc' ? (
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                          ) : (
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                          )}
+                        </svg>
+                      </button>
                     </th>
-                    <th
-                      onClick={() => handleSort('submittedAt')}
-                      className="px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 w-24"
-                    >
-                      Submitted
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                      <button
+                        onClick={() => handleSort('submittedAt')}
+                        className="flex items-center space-x-1 hover:text-gray-700 dark:hover:text-gray-100 transition-colors"
+                      >
+                        <span>Submitted</span>
+                        <svg className={`w-4 h-4 transition-colors ${
+                          sortField === 'submittedAt' 
+                            ? 'text-blue-600 dark:text-blue-400' 
+                            : 'text-gray-400 dark:text-gray-500'
+                        }`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          {sortField === 'submittedAt' && sortDirection === 'desc' ? (
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                          ) : (
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                          )}
+                        </svg>
+                      </button>
                     </th>
-                    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider w-20">
-                      Actions
-                    </th>
+                    <th className="px-3 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                        ACTIONS
+                      </th>
                   </tr>
                 </thead>
-                <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
+                <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-600">
                   {filteredAndSortedRequests.map((request) => (
                     <tr key={request.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
 
-                      <td className="px-3 py-3 whitespace-nowrap">
+                      <td className="px-3 py-2 whitespace-nowrap">
                         <div>
                           <div className="text-sm font-medium text-gray-900 dark:text-white truncate">
                             {request.user.firstName} {request.user.lastName}
@@ -428,59 +514,67 @@ const ApproveRequestsPage = () => {
                           </div>
                         </div>
                       </td>
-                      <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                      <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                         <span className="truncate block" title={request.leaveType.name}>
                           {request.leaveType.name}
                         </span>
                       </td>
-                      <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                        {new Date(request.startDate).toLocaleDateString()}
+                      <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                        {new Date(request.startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                       </td>
-                      <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                        {new Date(request.endDate).toLocaleDateString()}
+                      <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                        {new Date(request.endDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                       </td>
-                      <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-white text-center">
+                      <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900 dark:text-white text-center">
                         {request.duration}
                       </td>
-                      <td className="px-3 py-3 text-sm text-gray-900 dark:text-white">
-                        <div className="max-w-48 truncate" title={request.reason}>
+                      <td className="px-3 py-2 text-sm text-gray-900 dark:text-white">
+                        <div className="max-w-32 truncate" title={request.reason}>
                           {request.reason}
                         </div>
                       </td>
-                      <td className="px-3 py-3 whitespace-nowrap">
-                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${getStatusColor(request.status)}`}>
+                      <td className="px-3 py-2 whitespace-nowrap">
+                        <span className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded-full ${
+                          request.status === 'approved'
+                            ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                            : request.status === 'rejected'
+                            ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                            : request.status === 'cancelled'
+                            ? 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200'
+                            : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+                        }`}>
                           {getStatusIcon(request.status)}
                           <span className="ml-1 capitalize">{request.status}</span>
                         </span>
                       </td>
-                      <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                        {new Date(request.submittedAt).toLocaleDateString()}
+                      <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                        {new Date(request.submittedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                       </td>
-                      <td className="px-3 py-3 whitespace-nowrap text-sm font-medium">
-                        {request.status === 'pending' && (
-                          <div className="flex flex-col space-y-1">
+                      <td className="px-3 py-2 whitespace-nowrap text-right text-sm font-medium">
+                        {request.status === 'pending' ? (
+                          <div className="flex gap-2">
                             <button
-                              onClick={() => handleApproveRequest(request)}
-                              className="inline-flex items-center px-2 py-1 border border-transparent text-xs font-medium rounded text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-1 focus:ring-green-500"
+                              onClick={() => {
+                                setRequestToApprove(request);
+                                setShowApproveDialog(true);
+                              }}
+                              className="px-3 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700 transition-colors"
                             >
-                              <CheckCircleIcon className="h-3 w-3 mr-1" />
                               Approve
                             </button>
                             <button
-                              onClick={() => handleRejectRequest(request)}
-                              className="inline-flex items-center px-2 py-1 border border-transparent text-xs font-medium rounded text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-1 focus:ring-red-500"
+                              onClick={() => {
+                                setRequestToReject(request);
+                                setShowRejectDialog(true);
+                              }}
+                              className="px-3 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700 transition-colors"
                             >
-                              <XCircleIcon className="h-3 w-3 mr-1" />
                               Reject
                             </button>
                           </div>
-                        )}
-                        {request.status !== 'pending' && (
-                          <span className="text-gray-400 text-xs">
-                            {request.status === 'approved' ? 'Approved' : 
-                             request.status === 'rejected' ? 'Rejected' : 
-                             request.status === 'cancelled' ? 'Cancelled' : 
-                             request.status.charAt(0).toUpperCase() + request.status.slice(1)}
+                        ) : (
+                          <span className="text-gray-400 dark:text-gray-500">
+                            {getStatusIcon(request.status)}
                           </span>
                         )}
                       </td>
@@ -490,7 +584,6 @@ const ApproveRequestsPage = () => {
               </table>
             </div>
           )}
-          </Card.Content>
         </Card>
       </div>
 
