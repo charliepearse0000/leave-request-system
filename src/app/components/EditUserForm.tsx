@@ -85,7 +85,6 @@ const EditUserForm: React.FC<EditUserFormProps> = ({ user, onUserUpdated, onCanc
     }
 
     setIsSubmitting(true);
-    
     try {
       // Update user basic info
       await apiService.makeAuthenticatedRequest(`/api/users/${user.id}`, {
@@ -109,10 +108,7 @@ const EditUserForm: React.FC<EditUserFormProps> = ({ user, onUserUpdated, onCanc
       let updatedUser: UserProfile;
       if (formData.annualLeaveBalance !== user.annualLeaveBalance || 
           formData.sickLeaveBalance !== user.sickLeaveBalance) {
-        updatedUser = await apiService.updateStaffAllowance(user.id, {
-          annualLeaveBalance: formData.annualLeaveBalance,
-          sickLeaveBalance: formData.sickLeaveBalance
-        });
+        updatedUser = await apiService.updateStaffAllowance(user.id, formData.annualLeaveBalance, formData.sickLeaveBalance);
       } else {
         // Fetch updated user data if no leave balance changes
         updatedUser = await apiService.makeAuthenticatedRequest<UserProfile>(`/api/users/${user.id}`);
@@ -141,8 +137,16 @@ const EditUserForm: React.FC<EditUserFormProps> = ({ user, onUserUpdated, onCanc
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+    <div 
+      className="fixed inset-0 z-[9999] overflow-y-auto transition-opacity duration-300"
+      style={{ backgroundColor: 'rgba(0, 0, 0, 0.25)' }}
+      onClick={onCancel}
+    >
+      <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center">
+        <div 
+          className="relative inline-block align-middle bg-white dark:bg-gray-800 rounded-xl shadow-2xl transform transition-all max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto border border-gray-200 dark:border-gray-700"
+          onClick={(e) => e.stopPropagation()}
+        >
         <div className="p-6">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
@@ -159,102 +163,100 @@ const EditUserForm: React.FC<EditUserFormProps> = ({ user, onUserUpdated, onCanc
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* First Name */}
-            <div>
-              <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                First Name
-              </label>
-              <input
-                type="text"
-                id="firstName"
-                name="firstName"
-                value={formData.firstName}
-                onChange={handleInputChange}
-                className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white ${
-                  errors.firstName ? 'border-red-500' : 'border-gray-300'
-                }`}
-              />
-              {errors.firstName && (
-                <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.firstName}</p>
-              )}
-            </div>
-
-            {/* Last Name */}
-            <div>
-              <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Last Name
-              </label>
-              <input
-                type="text"
-                id="lastName"
-                name="lastName"
-                value={formData.lastName}
-                onChange={handleInputChange}
-                className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white ${
-                  errors.lastName ? 'border-red-500' : 'border-gray-300'
-                }`}
-              />
-              {errors.lastName && (
-                <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.lastName}</p>
-              )}
-            </div>
-
-            {/* Email */}
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Email
-              </label>
-              <input
-                type="email"
-                id="email"
-                name="email"
-                value={formData.email}
-                onChange={handleInputChange}
-                className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white ${
-                  errors.email ? 'border-red-500' : 'border-gray-300'
-                }`}
-              />
-              {errors.email && (
-                <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.email}</p>
-              )}
-            </div>
-
-            {/* Role */}
-            <div>
-              <label htmlFor="roleId" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Role
-              </label>
-              <select
-                id="roleId"
-                name="roleId"
-                value={formData.roleId}
-                onChange={handleInputChange}
-                className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white ${
-                  errors.roleId ? 'border-red-500' : 'border-gray-300'
-                }`}
-              >
-                <option value="">Select a role</option>
-                {roles.map((role) => (
-                  <option key={role.id} value={role.id}>
-                    {role.name.charAt(0).toUpperCase() + role.name.slice(1)}
-                  </option>
-                ))}
-              </select>
-              {errors.roleId && (
-                <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.roleId}</p>
-              )}
-            </div>
-
-            {/* Leave Balances */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Annual Leave Balance */}
+              <div>
+                <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  First Name
+                </label>
+                <input
+                  type="text"
+                  id="firstName"
+                  name="firstName"
+                  value={formData.firstName}
+                  onChange={handleInputChange}
+                  className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white ${
+                    errors.firstName ? 'border-red-500' : 'border-gray-300'
+                  }`}
+                />
+                {errors.firstName && (
+                  <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.firstName}</p>
+                )}
+              </div>
+
+              <div>
+                <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Last Name
+                </label>
+                <input
+                  type="text"
+                  id="lastName"
+                  name="lastName"
+                  value={formData.lastName}
+                  onChange={handleInputChange}
+                  className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white ${
+                    errors.lastName ? 'border-red-500' : 'border-gray-300'
+                  }`}
+                />
+                {errors.lastName && (
+                  <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.lastName}</p>
+                )}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Email
+                </label>
+                <input
+                  type="email"
+                  id="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white ${
+                    errors.email ? 'border-red-500' : 'border-gray-300'
+                  }`}
+                />
+                {errors.email && (
+                  <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.email}</p>
+                )}
+              </div>
+
+              <div>
+                <label htmlFor="roleId" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Role
+                </label>
+                <select
+                  id="roleId"
+                  name="roleId"
+                  value={formData.roleId}
+                  onChange={handleInputChange}
+                  className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white ${
+                    errors.roleId ? 'border-red-500' : 'border-gray-300'
+                  }`}
+                >
+                  <option value="">Select a role</option>
+                  {roles.map((role) => (
+                    <option key={role.id} value={role.id}>
+                      {role.name.charAt(0).toUpperCase() + role.name.slice(1)}
+                    </option>
+                  ))}
+                </select>
+                {errors.roleId && (
+                  <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.roleId}</p>
+                )}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label htmlFor="annualLeaveBalance" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Annual Leave Allowance (days)
-                  <span className="ml-2 text-xs text-gray-500 dark:text-gray-400">
-                    (Company default: {companySettings.getDefaultAnnualLeaveAllowance()})
-                  </span>
                 </label>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
+                  Company default: {companySettings.getDefaultAnnualLeaveAllowance()} days
+                </p>
                 <input
                   type="number"
                   id="annualLeaveBalance"
@@ -275,14 +277,13 @@ const EditUserForm: React.FC<EditUserFormProps> = ({ user, onUserUpdated, onCanc
                 )}
               </div>
 
-              {/* Sick Leave Balance */}
               <div>
                 <label htmlFor="sickLeaveBalance" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Sick Leave Allowance (days)
-                  <span className="ml-2 text-xs text-gray-500 dark:text-gray-400">
-                    (Company default: {companySettings.getDefaultSickLeaveAllowance()})
-                  </span>
                 </label>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
+                  Company default: {companySettings.getDefaultSickLeaveAllowance()} days
+                </p>
                 <input
                   type="number"
                   id="sickLeaveBalance"
@@ -304,7 +305,6 @@ const EditUserForm: React.FC<EditUserFormProps> = ({ user, onUserUpdated, onCanc
               </div>
             </div>
 
-            {/* Action Buttons */}
             <div className="flex justify-end space-x-3 pt-6">
               <button
                 type="button"
@@ -322,6 +322,7 @@ const EditUserForm: React.FC<EditUserFormProps> = ({ user, onUserUpdated, onCanc
               </button>
             </div>
           </form>
+        </div>
         </div>
       </div>
     </div>

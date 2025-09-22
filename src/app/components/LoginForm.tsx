@@ -143,7 +143,6 @@ export default function LoginForm() {
         </h2>
         
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Email Field */}
           <div>
             <label 
               htmlFor="email" 
@@ -172,7 +171,6 @@ export default function LoginForm() {
             )}
           </div>
 
-          {/* Password Field */}
           <div>
             <label 
               htmlFor="password" 
@@ -201,7 +199,6 @@ export default function LoginForm() {
             )}
           </div>
 
-          {/* Success Message */}
           {successMessage && (
             <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-md p-4">
               <div className="flex">
@@ -217,7 +214,6 @@ export default function LoginForm() {
             </div>
           )}
 
-          {/* Error Message */}
           {submitError && (
             <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md p-4">
               <div className="flex">
@@ -233,7 +229,6 @@ export default function LoginForm() {
             </div>
           )}
 
-          {/* Submit Button */}
           <button
             type="submit"
             disabled={isLoading}
@@ -243,7 +238,6 @@ export default function LoginForm() {
           </button>
         </form>
         
-        {/* Additional Links */}
         <div className="mt-6 text-center space-y-2">
           <a 
             href="#" 

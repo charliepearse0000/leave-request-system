@@ -7,6 +7,7 @@ import { apiService, UserProfile } from '../services/api';
 import { companySettings } from '../services/company-settings';
 import Header from '../components/Header';
 import EditUserForm from '../components/EditUserForm';
+import AddStaffForm from '../components/AddStaffForm';
 import Card from '../components/Card';
 import ConfirmationDialog from '../components/ConfirmationDialog';
 
@@ -20,6 +21,7 @@ export default function EditUsersPage() {
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [selectedUser, setSelectedUser] = useState<UserProfile | null>(null);
   const [showEditForm, setShowEditForm] = useState(false);
+  const [showAddStaffForm, setShowAddStaffForm] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState('all');
@@ -31,11 +33,11 @@ export default function EditUsersPage() {
   const router = useRouter();
 
   useEffect(() => {
-    // Check if user is admin
     const userData = localStorage.getItem('userData');
     if (userData) {
       const user = JSON.parse(userData);
-      if (user.role !== 'admin') {
+      const userRole = typeof user.role === 'string' ? user.role : user.role?.name;
+      if (userRole !== 'admin') {
         router.push('/');
         return;
       }
@@ -99,10 +101,7 @@ export default function EditUsersPage() {
     }
   };
 
-  const cancelDeleteUser = () => {
-    setShowDeleteDialog(false);
-    setUserToDelete(null);
-  };
+
 
   const handleSort = (key: string) => {
     let direction: 'asc' | 'desc' = 'asc';
@@ -116,12 +115,10 @@ export default function EditUsersPage() {
 
   const filteredUsers = users
     .filter(user => {
-      // Search filter
       const matchesSearch = `${user.firstName} ${user.lastName}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
         user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
         user.role.name.toLowerCase().includes(searchTerm.toLowerCase());
       
-      // Role filter
       const matchesRole = roleFilter === 'all' || user.role.name === roleFilter;
       
       return matchesSearch && matchesRole;
@@ -165,7 +162,6 @@ export default function EditUsersPage() {
         return 0;
       }
       
-      // Default sort: employees first, then managers, then admins
       const roleOrder = { 'employee': 0, 'manager': 1, 'admin': 2 };
       const aOrder = roleOrder[a.role.name as keyof typeof roleOrder] ?? 3;
       const bOrder = roleOrder[b.role.name as keyof typeof roleOrder] ?? 3;
@@ -174,7 +170,6 @@ export default function EditUsersPage() {
         return aOrder - bOrder;
       }
       
-      // If same role, sort alphabetically by name
       return `${a.firstName} ${a.lastName}`.localeCompare(`${b.firstName} ${b.lastName}`);
     });
 
@@ -184,7 +179,6 @@ export default function EditUsersPage() {
 
       <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div className="px-4 py-6 sm:px-0">
-          {/* Page Header */}
           <div className="mb-6">
             <div className="flex items-center justify-between">
               <div>
@@ -207,13 +201,11 @@ export default function EditUsersPage() {
             </div>
           </div>
 
-          {/* User Management Card */}
           <Card variant="default">
               <div className="px-6 py-4">
-              {/* Add Staff Button */}
               <div className="mb-6">
                 <button
-                  onClick={() => router.push('/add-staff')}
+                  onClick={() => setShowAddStaffForm(true)}
                   className="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-md transition-all duration-200 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:bg-indigo-500 dark:hover:bg-indigo-600"
                 >
                   <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -223,7 +215,6 @@ export default function EditUsersPage() {
                 </button>
               </div>
 
-              {/* Search and Filter Bar */}
               <div className="mb-6 space-y-4">
                 <div className="flex flex-col sm:flex-row gap-4">
                   <div className="relative flex-1">
@@ -257,7 +248,6 @@ export default function EditUsersPage() {
 
 
 
-              {/* Quick Stats */}
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
                 <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 border border-blue-200 dark:border-blue-700">
                   <div className="flex items-center">
@@ -313,7 +303,6 @@ export default function EditUsersPage() {
                 </div>
               </div>
 
-              {/* Users Table */}
               <div className="overflow-x-auto">
                 {isLoading ? (
                   <div className="flex justify-center py-12">
@@ -488,7 +477,6 @@ export default function EditUsersPage() {
         </div>
       </main>
 
-      {/* Edit User Modal */}
       {showEditForm && selectedUser && (
         <EditUserForm
           user={selectedUser}
@@ -497,15 +485,26 @@ export default function EditUsersPage() {
         />
       )}
 
-      {/* Delete Confirmation Dialog */}
+      <AddStaffForm
+        isOpen={showAddStaffForm}
+        onCancel={() => setShowAddStaffForm(false)}
+        onStaffAdded={() => {
+          setShowAddStaffForm(false);
+          fetchUsers();
+        }}
+      />
+
       <ConfirmationDialog
         isOpen={showDeleteDialog}
         title="Delete User"
         message={`Are you sure you want to delete ${userToDelete?.firstName} ${userToDelete?.lastName}? This action cannot be undone and will permanently remove the user and all their data.`}
-        confirmText={isDeleting ? "Deleting..." : "Delete"}
-        cancelText="Cancel"
+        confirmText={isDeleting ? "Deleting..." : "Yes, Delete User"}
+        cancelText="No, Keep User"
         onConfirm={confirmDeleteUser}
-        onCancel={cancelDeleteUser}
+        onClose={() => {
+          setShowDeleteDialog(false);
+          setUserToDelete(null);
+        }}
         variant="danger"
       />
     </div>

@@ -129,10 +129,8 @@ export default function NewLeaveRequest() {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
       <Header title="New Leave Request" />
 
-      {/* Main Content */}
       <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div className="px-4 py-6 sm:px-0">
-          {/* Page Header */}
           <div className="mb-6">
           <div className="flex items-center justify-between">
             <div>
@@ -157,8 +155,6 @@ export default function NewLeaveRequest() {
             <Card.Content>
               <form onSubmit={handleSubmit} className="px-6 py-4 space-y-6">
 
-
-              {/* Leave Type */}
               <div>
                 <label htmlFor="leaveTypeId" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Leave Type *
@@ -180,9 +176,7 @@ export default function NewLeaveRequest() {
                 </select>
               </div>
 
-              {/* Date Range */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Start Date */}
                 <div>
                   <label htmlFor="startDate" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Start Date *
@@ -199,7 +193,6 @@ export default function NewLeaveRequest() {
                   />
                 </div>
 
-                {/* End Date */}
                 <div>
                   <label htmlFor="endDate" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     End Date *
@@ -217,7 +210,6 @@ export default function NewLeaveRequest() {
                 </div>
               </div>
 
-              {/* Duration Display */}
               {formData.startDate && formData.endDate && (
                 <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-md p-3">
                   <p className="text-sm text-blue-800 dark:text-blue-200">
@@ -226,7 +218,6 @@ export default function NewLeaveRequest() {
                 </div>
               )}
 
-              {/* Reason */}
               <div>
                 <label htmlFor="reason" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Reason *
@@ -243,7 +234,6 @@ export default function NewLeaveRequest() {
                 />
               </div>
 
-              {/* Submit Buttons */}
               <div className="flex justify-end space-x-3 pt-4">
                 <button
                   type="button"

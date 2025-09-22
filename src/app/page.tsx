@@ -104,10 +104,8 @@ export default function Home() {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
       <Header title="Dashboard" />
 
-      {/* Main Content */}
       <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div className="px-4 py-6 sm:px-0">
-          {/* Page Header */}
           <div className="mb-6">
             <div className="flex items-center justify-between">
               <div>
@@ -120,7 +118,6 @@ export default function Home() {
               </div>
             </div>
           </div>
-          {/* Leave Balance Display */}
           <Card variant="default" className="mb-6">
             <Card.Header>
               <div className="flex justify-between items-center">
@@ -204,9 +201,7 @@ export default function Home() {
             </Card.Content>
           </Card>
 
-          {/* Quick Actions Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
-            {/* New Request Card */}
             <Card 
               onClick={() => router.push('/new-request')}
               variant="clickable"
@@ -231,7 +226,6 @@ export default function Home() {
               </Card.Content>
             </Card>
 
-            {/* My Requests Card */}
             <Card 
               onClick={() => router.push('/requests')}
               variant="clickable"
@@ -256,7 +250,6 @@ export default function Home() {
               </Card.Content>
             </Card>
 
-            {/* Approve Requests Card (Manager/Admin only) */}
             {(user.role === 'manager' || user.role === 'admin') && (
               <Card 
                 onClick={() => router.push('/approve-requests')}
@@ -284,7 +277,6 @@ export default function Home() {
               </Card>
             )}
 
-            {/* Admin-only Manage Users Card */}
             {user.role === 'admin' && (
               <Card 
                 onClick={() => router.push('/edit-users')}
@@ -311,7 +303,6 @@ export default function Home() {
               </Card>
             )}
 
-            {/* Admin-only Company Settings Card */}
             {user.role === 'admin' && (
               <Card 
                 onClick={() => router.push('/company-settings')}
