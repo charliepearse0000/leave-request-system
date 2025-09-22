@@ -7,8 +7,10 @@ interface LoginResponse {
   token: string;
   user: {
     id: string;
+    firstName: string;
+    lastName: string;
     email: string;
-    name: string;
+    role: string;
   };
 }
 
@@ -140,7 +142,6 @@ class ApiService {
           } as ApiError;
         }
         
-        // Handle network connection errors
         if (error instanceof TypeError && error.message.includes('fetch')) {
           throw {
             message: 'Unable to connect to server. Please ensure the backend is running.',
@@ -165,23 +166,17 @@ class ApiService {
     });
   }
 
-  // Method to set authorization header for authenticated requests
   setAuthToken(token: string): void {
-    // This can be used for future authenticated API calls
     localStorage.setItem('authToken', token);
   }
 
-  // Method to get stored token
   getAuthToken(): string | null {
     return localStorage.getItem('authToken');
   }
 
-  // Method to clear stored token
   clearAuthToken(): void {
     localStorage.removeItem('authToken');
   }
-
-  // Method to make authenticated requests
   private async makeAuthenticatedRequest<T>(
     endpoint: string,
     options: RequestInit = {}
@@ -203,17 +198,14 @@ class ApiService {
     });
   }
 
-  // Method to fetch leave requests for the current user
   async getLeaveRequests(): Promise<LeaveRequest[]> {
     return this.makeAuthenticatedRequest<LeaveRequest[]>('/api/leave-requests/me');
   }
 
-  // Method to fetch all team leave requests
   async getTeamLeaveRequests(): Promise<LeaveRequest[]> {
     return this.makeAuthenticatedRequest<LeaveRequest[]>('/api/leave-requests/for-approval');
   }
 
-  // Method to fetch all company leave requests (admin only)
   async getAllCompanyLeaveRequests(): Promise<LeaveRequest[]> {
     return this.makeAuthenticatedRequest<LeaveRequest[]>('/api/leave-requests/all');
   }
@@ -232,7 +224,6 @@ class ApiService {
     });
   }
 
-  // Method to cancel a leave request
   async cancelLeaveRequest(requestId: string): Promise<LeaveRequest> {
     try {
       const result = await this.makeAuthenticatedRequest<LeaveRequest>(`/api/leave-requests/${requestId}/cancel`, {
@@ -243,8 +234,6 @@ class ApiService {
       throw error;
     }
   }
-
-  // Method to delete a leave request using DELETE API
   async deleteLeaveRequest(requestId: string): Promise<LeaveRequest> {
     try {
       const result = await this.makeAuthenticatedRequest<LeaveRequest>(`/api/leave-requests/${requestId}`, {
@@ -262,7 +251,6 @@ class ApiService {
       throw new Error('No authentication token found');
     }
     
-    // Extract user ID from stored user data
     const userData = localStorage.getItem('userData');
     if (!userData) {
       throw new Error('No user data found');
@@ -280,24 +268,22 @@ class ApiService {
     };
   }
 
-  // Method to fetch all leave types
   async getLeaveTypes(): Promise<LeaveType[]> {
     return this.makeAuthenticatedRequest<LeaveType[]>('/api/leave-types');
   }
 
-  // Method to create a new leave request
+  async getRoles(): Promise<{ id: string; name: string; description: string }[]> {
+    return this.makeAuthenticatedRequest<{ id: string; name: string; description: string }[]>('/api/roles');
+  }
+
   async createLeaveRequest(requestData: CreateLeaveRequestData): Promise<LeaveRequest> {
     return this.makeAuthenticatedRequest<LeaveRequest>('/api/leave-requests', {
       method: 'POST',
       body: JSON.stringify(requestData),
     });
   }
-
-  // Method to fetch team balances
   async getTeamBalances(): Promise<TeamBalance[]> {
-    // Use getAllUsers endpoint instead of team-balances due to route ordering issue
     const users = await this.makeAuthenticatedRequest<any[]>('/api/users');
-    // Transform user data to match TeamBalance interface
     return users.map(user => ({
       id: user.id,
       firstName: user.firstName,
@@ -307,44 +293,66 @@ class ApiService {
       sickLeaveBalance: user.sickLeaveBalance || 0
     }));
   }
-
-  // Method to create a new staff member
   async createStaff(staffData: CreateStaffData): Promise<UserProfile> {
-    // Step 1: Register the user (creates with default employee role)
-    const newUser = await this.makeRequest<UserProfile>('/api/auth/register', {
-      method: 'POST',
-      body: JSON.stringify({
-        firstName: staffData.firstName,
-        lastName: staffData.lastName,
-        email: staffData.email,
-        password: staffData.password
-      }),
-    });
-
-    // Step 2: Update the user's role if not employee
-    if (staffData.roleId && staffData.roleId !== '5596b6ac-2059-4a6f-8522-4180c3c82e1a') {
-      await this.makeAuthenticatedRequest(`/api/users/${newUser.id}/role`, {
-        method: 'POST',
-        body: JSON.stringify({ roleId: staffData.roleId }),
-      });
-    }
-
-    // Step 3: Update leave balances if provided
-    if (staffData.annualLeaveBalance !== undefined || staffData.sickLeaveBalance !== undefined) {
-      await this.makeAuthenticatedRequest(`/api/users/${newUser.id}/leave-balance`, {
+    try {
+      const registrationResponse = await this.makeRequest<{
+        message: string;
+        user: {
+          id: string;
+          firstName: string;
+          lastName: string;
+          email: string;
+        };
+      }>('/api/auth/register', {
         method: 'POST',
         body: JSON.stringify({
-          annualLeaveChange: staffData.annualLeaveBalance || 25,
-          sickLeaveChange: staffData.sickLeaveBalance || 10
+          firstName: staffData.firstName,
+          lastName: staffData.lastName,
+          email: staffData.email,
+          password: staffData.password,
+          roleId: staffData.roleId
         }),
       });
+
+      if (!registrationResponse) {
+        throw new Error('User registration failed - no response received');
+      }
+      
+      if (!registrationResponse.user) {
+        throw new Error('User registration failed - no user object returned');
+      }
+      
+      if (!registrationResponse.user.id) {
+        throw new Error('User registration failed - no user ID returned');
+      }
+
+      const newUser = registrationResponse.user;
+      if (staffData.annualLeaveBalance !== undefined || staffData.sickLeaveBalance !== undefined) {
+        try {
+          await this.makeAuthenticatedRequest(`/api/users/${newUser.id}/leave-balance`, {
+            method: 'POST',
+            body: JSON.stringify({
+              annualLeaveChange: staffData.annualLeaveBalance || 25,
+              sickLeaveChange: staffData.sickLeaveBalance || 10
+            }),
+          });
+        } catch (balanceError: any) {
+          throw new Error(`Failed to set leave balances: ${balanceError.message || 'Unknown error'}`);
+        }
+      }
+
+      try {
+        return await this.makeAuthenticatedRequest<UserProfile>(`/api/users/${newUser.id}`);
+      } catch (fetchError: any) {
+        throw new Error(`Failed to fetch updated user data: ${fetchError.message || 'Unknown error'}`);
+      }
+    } catch (error: any) {
+      if (error.message && (error.message.includes('Failed to') || error.message.includes('User registration failed'))) {
+        throw error;
+      }
+      throw new Error(`Failed to create staff member: ${error.message || 'Unknown error occurred'}`);
     }
-
-    // Return the updated user data
-    return this.makeAuthenticatedRequest<UserProfile>(`/api/users/${newUser.id}`);
   }
-
-  // Method to update staff allowances (leave balances)
   async updateStaffAllowance(staffId: string, annualLeaveBalance: number, sickLeaveBalance: number): Promise<UserProfile> {
     await this.makeAuthenticatedRequest(`/api/users/${staffId}/leave-balance`, {
       method: 'POST',
@@ -354,7 +362,6 @@ class ApiService {
       }),
     });
 
-    // Return the updated user data
     return this.makeAuthenticatedRequest<UserProfile>(`/api/users/${staffId}`);
   }
 }
