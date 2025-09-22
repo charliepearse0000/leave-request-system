@@ -57,7 +57,7 @@ interface LeaveRequest {
   };
   startDate: string;
   endDate: string;
-  days: number;
+  duration: number;
   status: 'pending' | 'approved' | 'rejected';
   reason: string;
   submittedAt: string;

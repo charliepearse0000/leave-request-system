@@ -40,14 +40,7 @@ const ApproveRequestsPage = () => {
   const [requestToApprove, setRequestToApprove] = useState<LeaveRequest | null>(null);
   const [requestToReject, setRequestToReject] = useState<LeaveRequest | null>(null);
 
-  // Function to calculate business days between two dates
-  const calculateDays = (startDate: string, endDate: string): number => {
-    const start = new Date(startDate);
-    const end = new Date(endDate);
-    const timeDiff = end.getTime() - start.getTime();
-    const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24)) + 1; // +1 to include both start and end dates
-    return daysDiff;
-  };
+  
 
   useEffect(() => {
     const token = localStorage.getItem('authToken');
@@ -447,7 +440,7 @@ const ApproveRequestsPage = () => {
                         {new Date(request.endDate).toLocaleDateString()}
                       </td>
                       <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-white text-center">
-                        {request.days || calculateDays(request.startDate, request.endDate)}
+                        {request.duration}
                       </td>
                       <td className="px-3 py-3 text-sm text-gray-900 dark:text-white">
                         <div className="max-w-48 truncate" title={request.reason}>

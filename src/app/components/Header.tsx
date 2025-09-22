@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { UserGroupIcon } from '@heroicons/react/24/outline';
 
 interface User {
   id: string;
@@ -102,7 +101,9 @@ export default function Header({
             )}
             
             <div className="flex items-center space-x-3">
-              <UserGroupIcon className="h-8 w-8 text-blue-600" />
+              <svg className="h-8 w-8 text-green-600" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 2C12 2 8 4 8 8C8 10 9 11 10 12C9 11 8 10 8 8C8 4 12 2 12 2ZM12 2C12 2 16 4 16 8C16 10 15 11 14 12C15 11 16 10 16 8C16 4 12 2 12 2ZM12 2C12 2 10 6 10 10C10 12 11 13 12 14C11 13 10 12 10 10C10 6 12 2 12 2ZM12 2C12 2 14 6 14 10C14 12 13 13 12 14C13 13 14 12 14 10C14 6 12 2 12 2ZM12 2C12 2 11 7 11 11C11 13 12 14 12 15C12 14 11 13 11 11C11 7 12 2 12 2ZM12 2C12 2 13 7 13 11C13 13 12 14 12 15C12 14 13 13 13 11C13 7 12 2 12 2ZM11.5 15V22H12.5V15C12.5 15 12 14.5 12 15C12 14.5 11.5 15 11.5 15Z"/>
+              </svg>
               <div>
                 <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
                   Leave Management System

@@ -471,16 +471,16 @@ const LeaveRequestsPage = () => {
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                       <button
-                        onClick={() => handleSort('days')}
+                        onClick={() => handleSort('duration')}
                         className="flex items-center space-x-1 hover:text-gray-700 dark:hover:text-gray-100 transition-colors"
                       >
                         <span>Days</span>
                         <svg className={`w-4 h-4 transition-colors ${
-                          sortField === 'days' 
+                          sortField === 'duration' 
                             ? 'text-blue-600 dark:text-blue-400' 
                             : 'text-gray-400 dark:text-gray-500'
                         }`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          {sortField === 'days' && sortDirection === 'desc' ? (
+                          {sortField === 'duration' && sortDirection === 'desc' ? (
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                           ) : (
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
@@ -549,7 +549,7 @@ const LeaveRequestsPage = () => {
                         {new Date(request.endDate).toLocaleDateString()}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
-                        {request.days}
+                        {request.duration}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`inline-flex items-center gap-1 px-3 py-1 text-xs font-semibold rounded-full border ${getStatusColor(request.status)}`}>
@@ -579,8 +579,8 @@ const LeaveRequestsPage = () => {
                                 </svg>
                               )}
                               {cancellingIds.has(request.id) 
-                                ? (currentUser?.role === 'admin' ? 'Deleting...' : 'Cancelling...') 
-                                : (currentUser?.role === 'admin' ? 'Delete' : 'Cancel')}
+                                ? 'Cancelling...' 
+                                : 'Cancel'}
                             </button>
                           )}
                         </td>
@@ -604,12 +604,10 @@ const LeaveRequestsPage = () => {
       
       <ConfirmationDialog
         isOpen={showConfirmDialog}
-        title={currentUser?.role === 'admin' ? "Delete Leave Request" : "Cancel Leave Request"}
-        message={currentUser?.role === 'admin' 
-          ? "Are you sure you want to delete this leave request? This action cannot be undone."
-          : "Are you sure you want to cancel this leave request?"}
-        confirmText={currentUser?.role === 'admin' ? "Delete" : "Cancel"}
-        cancelText="Cancel"
+        title="Cancel Leave Request"
+        message="Are you sure you want to cancel this leave request?"
+        confirmText="Cancel"
+        cancelText="Keep Request"
         onConfirm={confirmDeleteRequest}
         onCancel={cancelDeleteRequest}
         variant="danger"

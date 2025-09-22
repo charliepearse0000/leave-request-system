@@ -30,7 +30,7 @@ export const handlers = [
           type: 'annual',
           startDate: '2024-01-15',
           endDate: '2024-01-19',
-          days: 5,
+          duration: 5,
           status: 'approved',
           reason: 'Family vacation',
           appliedDate: '2024-01-01'
@@ -41,7 +41,7 @@ export const handlers = [
           type: 'sick',
           startDate: '2024-02-10',
           endDate: '2024-02-12',
-          days: 3,
+          duration: 3,
           status: 'pending',
           reason: 'Medical appointment',
           appliedDate: '2024-02-08'
@@ -61,7 +61,7 @@ export const handlers = [
         type: 'annual',
         startDate: '2024-03-01',
         endDate: '2024-03-05',
-        days: 5,
+        duration: 5,
         status: 'pending',
         reason: 'Personal time off',
         appliedDate: '2024-02-20'
