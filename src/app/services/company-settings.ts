@@ -43,7 +43,7 @@ class CompanySettingsService {
         this.settings = { ...this.settings, ...JSON.parse(stored) };
       }
     } catch (error) {
-      console.warn('Failed to load company settings from localStorage:', error);
+      // Failed to load settings from localStorage
     }
   }
 
@@ -56,7 +56,7 @@ class CompanySettingsService {
       
       localStorage.setItem('companySettings', JSON.stringify(this.settings));
     } catch (error) {
-      console.warn('Failed to save company settings to localStorage:', error);
+      // Failed to save settings to localStorage
     }
   }
 
