@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { ClockIcon, CheckCircleIcon, XCircleIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { ClockIcon, CheckCircleIcon, XCircleIcon, XMarkIcon, MinusCircleIcon } from '@heroicons/react/24/outline';
 import { apiService, type LeaveRequest, type ApiError } from '../services/api';
 import ConfirmationDialog from '../components/ConfirmationDialog';
 import { useBalance } from '../contexts/BalanceContext';
@@ -19,7 +19,8 @@ const LeaveRequestsPage = () => {
   const [cancellingIds, setCancellingIds] = useState<Set<string>>(new Set());
   const [sortField, setSortField] = useState<SortField>('submittedAt');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
-  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'approved' | 'rejected' | 'cancelled'>('all');
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [requestToDelete, setRequestToDelete] = useState<string | null>(null);
   const [isAdminView, setIsAdminView] = useState(false);
@@ -202,31 +203,39 @@ const LeaveRequestsPage = () => {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'approved':
-        return 'text-green-700 bg-green-50 border-green-200';
+        return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
       case 'rejected':
-        return 'text-red-700 bg-red-50 border-red-200';
-      case 'pending':
-        return 'text-amber-700 bg-amber-50 border-amber-200';
+        return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
+      case 'cancelled':
+        return 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200';
       default:
-        return 'text-gray-700 bg-gray-50 border-gray-200';
+        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
     }
   };
 
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'approved':
-        return <CheckCircleIcon className="h-4 w-4" />;
+        return <CheckCircleIcon className="h-5 w-5 text-green-500" />;
       case 'rejected':
-        return <XCircleIcon className="h-4 w-4" />;
-      case 'pending':
-        return <ClockIcon className="h-4 w-4" />;
+        return <XCircleIcon className="h-5 w-5 text-red-500" />;
+      case 'cancelled':
+        return <MinusCircleIcon className="h-5 w-5 text-orange-500" />;
       default:
-        return null;
+        return <ClockIcon className="h-5 w-5 text-yellow-500" />;
     }
   };
 
   const filteredAndSortedRequests = requests
-    .filter(request => statusFilter === 'all' || request.status === statusFilter)
+    .filter(request => {
+      const matchesSearch = 
+        request.leaveType.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        request.reason.toLowerCase().includes(searchTerm.toLowerCase());
+      
+      const matchesStatus = statusFilter === 'all' || request.status === statusFilter;
+      
+      return matchesSearch && matchesStatus;
+    })
     .sort((a, b) => {
       let aValue: string | number;
       let bValue: string | number;
@@ -379,31 +388,32 @@ const LeaveRequestsPage = () => {
               </div>
             </div>
           )}
-          {/* Filters */}
+          {/* Filters and Search */}
           <Card variant="default" className="mb-6">
-            <Card.Content className="p-6">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-              <div className="mb-4 sm:mb-0">
-                <label htmlFor="status-filter" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Filter by Status:
-                </label>
-                <select
-                  id="status-filter"
-                  value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value)}
-                  className="border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 bg-white dark:bg-gray-700 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:text-white"
-                >
-                  <option value="all">All Requests</option>
-                  <option value="pending">Pending</option>
-                  <option value="approved">Approved</option>
-                  <option value="rejected">Rejected</option>
-                </select>
+              <div className="px-6 py-4 flex flex-col sm:flex-row gap-4">
+                <div className="flex-1">
+                  <input
+                    type="text"
+                    placeholder="Search by leave type or reason..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                  />
+                </div>
+                <div>
+                  <select
+                    value={statusFilter}
+                    onChange={(e) => setStatusFilter(e.target.value as any)}
+                    className="px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                  >
+                    <option value="all">All Status</option>
+                    <option value="pending">Pending</option>
+                    <option value="approved">Approved</option>
+                    <option value="rejected">Rejected</option>
+                    <option value="cancelled">Cancelled</option>
+                  </select>
+                </div>
               </div>
-              <div className="text-sm text-gray-600 dark:text-gray-400">
-                Showing {filteredAndSortedRequests.length} of {requests.length} requests
-              </div>
-            </div>
-            </Card.Content>
           </Card>
 
           {/* Table */}
@@ -489,6 +499,9 @@ const LeaveRequestsPage = () => {
                       </button>
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                      Reason
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                       <button
                         onClick={() => handleSort('status')}
                         className="flex items-center space-x-1 hover:text-gray-700 dark:hover:text-gray-100 transition-colors"
@@ -506,9 +519,6 @@ const LeaveRequestsPage = () => {
                           )}
                         </svg>
                       </button>
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                      Reason
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                       <button
@@ -539,32 +549,32 @@ const LeaveRequestsPage = () => {
                 <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-600">
                   {filteredAndSortedRequests.map((request) => (
                     <tr key={request.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
+                      <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
                         {request.leaveType?.name || 'Unknown'}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
+                      <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
                         {new Date(request.startDate).toLocaleDateString()}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
+                      <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
                         {new Date(request.endDate).toLocaleDateString()}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
+                      <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
                         {request.duration}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`inline-flex items-center gap-1 px-3 py-1 text-xs font-semibold rounded-full border ${getStatusColor(request.status)}`}>
-                          {getStatusIcon(request.status)}
-                          {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-300 max-w-xs truncate">
+                      <td className="px-3 py-2 text-sm text-gray-500 dark:text-gray-300 max-w-32 truncate">
                         {request.reason}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
+                      <td className="px-3 py-2 whitespace-nowrap">
+                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${getStatusColor(request.status)}`}>
+                          {getStatusIcon(request.status)}
+                          <span className="ml-1 capitalize">{request.status}</span>
+                        </span>
+                      </td>
+                      <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
                         {new Date(request.submittedAt).toLocaleDateString()}
                       </td>
                       {!isAdminView && (
-                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <td className="px-3 py-2 whitespace-nowrap text-right text-sm font-medium">
                           {request.status === 'pending' && (
                             <button
                               onClick={() => handleCancelRequest(request.id)}

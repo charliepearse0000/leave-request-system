@@ -211,8 +211,7 @@ export default function EditUsersPage() {
 
           {/* User Management Card */}
           <Card variant="default">
-
-            <Card.Content>
+              <div className="px-6 py-4">
               {/* Add Staff Button */}
               <div className="mb-6">
                 <button
@@ -486,7 +485,7 @@ export default function EditUsersPage() {
                   </table>
                 )}
               </div>
-            </Card.Content>
+              </div>
           </Card>
         </div>
       </main>
