@@ -8,7 +8,10 @@ interface User {
   email: string;
   firstName: string;
   lastName: string;
-  role: string;
+  role: {
+    id: string;
+    name: string;
+  };
 }
 
 interface HeaderProps {
@@ -48,7 +51,7 @@ export default function Header({
         try {
           setCurrentUser(JSON.parse(userData));
         } catch (error) {
-          console.error('Error parsing user data:', error);
+          // Error parsing user data
         }
       }
     }
@@ -158,7 +161,7 @@ export default function Header({
                           </dt>
                           <dd className="mt-1">
                             <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-                              {currentUser.role}
+                              {currentUser.role.name}
                             </span>
                           </dd>
                         </div>

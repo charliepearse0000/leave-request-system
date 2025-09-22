@@ -102,8 +102,6 @@ export default function LoginForm() {
       }, 100);
       
     } catch (error) {
-      console.error('Login failed:', error);
-      
       if (error instanceof Error && 'status' in error) {
         const apiError = error as ApiError;
         
