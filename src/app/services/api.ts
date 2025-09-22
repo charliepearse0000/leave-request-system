@@ -58,7 +58,7 @@ interface LeaveRequest {
   startDate: string;
   endDate: string;
   duration: number;
-  status: 'pending' | 'approved' | 'rejected';
+  status: 'pending' | 'approved' | 'rejected' | 'cancelled';
   reason: string;
   submittedAt: string;
 }
@@ -127,7 +127,8 @@ class ApiService {
         } as ApiError;
       }
 
-      return await response.json();
+      const data = await response.json();
+      return data;
     } catch (error) {
       clearTimeout(timeoutId);
       
@@ -217,30 +218,42 @@ class ApiService {
     return this.makeAuthenticatedRequest<LeaveRequest[]>('/api/leave-requests/all');
   }
 
-  async approveLeaveRequest(requestId: string): Promise<void> {
+  async approveLeaveRequest(requestId: string, comments?: string): Promise<void> {
     return this.makeAuthenticatedRequest<void>(`/api/leave-requests/${requestId}/approve`, {
-      method: 'PUT'
+      method: 'POST',
+      body: JSON.stringify(comments ? { comments } : {})
     });
   }
 
-  async rejectLeaveRequest(requestId: string): Promise<void> {
+  async rejectLeaveRequest(requestId: string, comments?: string): Promise<void> {
     return this.makeAuthenticatedRequest<void>(`/api/leave-requests/${requestId}/reject`, {
-      method: 'PUT'
+      method: 'POST',
+      body: JSON.stringify(comments ? { comments } : {})
     });
   }
 
   // Method to cancel a leave request
   async cancelLeaveRequest(requestId: string): Promise<LeaveRequest> {
-    return this.makeAuthenticatedRequest<LeaveRequest>(`/api/leave-requests/${requestId}/cancel`, {
-      method: 'POST',
-    });
+    try {
+      const result = await this.makeAuthenticatedRequest<LeaveRequest>(`/api/leave-requests/${requestId}/cancel`, {
+        method: 'POST',
+      });
+      return result;
+    } catch (error) {
+      throw error;
+    }
   }
 
   // Method to delete a leave request using DELETE API
   async deleteLeaveRequest(requestId: string): Promise<LeaveRequest> {
-    return this.makeAuthenticatedRequest<LeaveRequest>(`/api/leave-requests/${requestId}`, {
-      method: 'DELETE',
-    });
+    try {
+      const result = await this.makeAuthenticatedRequest<LeaveRequest>(`/api/leave-requests/${requestId}`, {
+        method: 'DELETE',
+      });
+      return result;
+    } catch (error) {
+      throw error;
+    }
   }
 
   async getUserProfile(): Promise<UserProfile> {
