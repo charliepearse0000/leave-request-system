@@ -16,7 +16,10 @@ interface User {
   email: string;
   firstName: string;
   lastName: string;
-  role: string;
+  role: {
+    id: string;
+    name: string;
+  };
   annualLeaveBalance?: number;
   sickLeaveBalance?: number;
 }
@@ -50,13 +53,11 @@ export default function Home() {
         // Fetch balance data separately for dynamic updates
         await refreshBalance();
       } catch (error) {
-        console.error('Error fetching user data:', error);
         // Still show basic user info even if profile fetch fails
         try {
           const parsedUser = JSON.parse(userData);
           setUser(parsedUser);
         } catch (parseError) {
-          console.error('Error parsing user data:', parseError);
           localStorage.removeItem('authToken');
           localStorage.removeItem('userData');
         }
