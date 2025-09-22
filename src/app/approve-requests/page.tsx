@@ -95,7 +95,6 @@ const ApproveRequestsPage = () => {
       
       setRequests(requestsData);
     } catch (err) {
-      console.error('Error fetching requests:', err);
       if (err instanceof Error) {
         setError(err.message);
       } else {
@@ -135,7 +134,6 @@ const ApproveRequestsPage = () => {
       setRequestToApprove(null);
       setApproveComments('');
     } catch (err) {
-      console.error('Error approving request:', err);
       alert('Failed to approve request. Please try again.');
     }
   };
@@ -159,7 +157,6 @@ const ApproveRequestsPage = () => {
       setRequestToReject(null);
       setRejectComments('');
     } catch (err) {
-      console.error('Error rejecting request:', err);
       alert('Failed to reject request. Please try again.');
     }
   };

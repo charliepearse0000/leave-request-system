@@ -48,7 +48,6 @@ export default function NewLeaveRequest() {
         const types = await apiService.getLeaveTypes();
         setLeaveTypes(types);
       } catch (error) {
-        console.error('Error fetching leave types:', error);
         showError('Loading Failed', 'Failed to load leave types');
       }
     };
@@ -96,7 +95,6 @@ export default function NewLeaveRequest() {
         router.push('/requests');
       }, 2000);
     } catch (error: any) {
-      console.error('Error creating leave request:', error);
       const errorMessage = error.response?.data?.message || 'Failed to create leave request';
       showError('Submission Failed', errorMessage);
     } finally {

@@ -9,7 +9,7 @@ import { useBalance } from '../contexts/BalanceContext';
 import Header from '../components/Header';
 import Card from '../components/Card';
 
-type SortField = keyof LeaveRequest;
+type SortField = keyof LeaveRequest | 'user.name' | 'leaveType';
 type SortDirection = 'asc' | 'desc';
 
 const LeaveRequestsPage = () => {
@@ -47,8 +47,8 @@ const LeaveRequestsPage = () => {
       
       // Check if this is admin view
       const viewParam = searchParams.get('view');
-      const isAdmin = user.role?.name === 'admin';
-      const isManager = user.role?.name === 'manager';
+      const isAdmin = user.role === 'admin';
+      const isManager = user.role === 'manager';
       const shouldShowAdminView = (viewParam === 'all' || viewParam === 'approve') && (isAdmin || isManager);
       setIsAdminView(shouldShowAdminView);
     }
@@ -120,7 +120,6 @@ const LeaveRequestsPage = () => {
     
     // Safety check - ensure we have current user data
     if (!currentUser) {
-      console.error('Debug - No current user data available');
       alert('User data not available. Please refresh the page and try again.');
       return;
     }
@@ -132,19 +131,11 @@ const LeaveRequestsPage = () => {
       // Check if user is admin to determine which API to call
       const isAdmin = currentUser?.role === 'admin';
       
-      console.log('Debug - Current user:', currentUser);
-      console.log('Debug - Current user role:', currentUser?.role);
-      console.log('Debug - Current user role name:', currentUser?.role?.name);
-      console.log('Debug - Is admin:', isAdmin);
-      console.log('Debug - Request to delete:', requestToDelete);
-      
       if (isAdmin) {
         // Admin can delete (permanent removal)
-        console.log('Debug - Calling deleteLeaveRequest');
         await apiService.deleteLeaveRequest(requestToDelete);
       } else {
         // Regular users can only cancel
-        console.log('Debug - Calling cancelLeaveRequest');
         await apiService.cancelLeaveRequest(requestToDelete);
       }
       
@@ -171,18 +162,14 @@ const LeaveRequestsPage = () => {
       }
       
       setRequests(data);
-      console.log('Debug - Successfully updated requests list');
       
       // Refresh balance as deleting a request may affect leave balance
       try {
         await refreshBalance();
-        console.log('Debug - Successfully refreshed balance');
       } catch (balanceError) {
-        console.error('Debug - Error refreshing balance:', balanceError);
         // Don't fail the whole operation if balance refresh fails
       }
     } catch (err) {
-      console.error('Debug - Error in confirmDeleteRequest:', err);
       const apiError = err as ApiError;
       alert(apiError.message || 'Failed to cancel leave request');
     } finally {
@@ -240,9 +227,9 @@ const LeaveRequestsPage = () => {
       let aValue: string | number;
       let bValue: string | number;
       
-      if (sortField === 'employee.name') {
-        aValue = a.employee?.name || 'Unknown';
-        bValue = b.employee?.name || 'Unknown';
+      if (sortField === 'user.name') {
+        aValue = `${a.user?.firstName} ${a.user?.lastName}` || 'Unknown';
+        bValue = `${b.user?.firstName} ${b.user?.lastName}` || 'Unknown';
       } else if (sortField === 'leaveType') {
         aValue = a.leaveType?.name || 'Unknown';
         bValue = b.leaveType?.name || 'Unknown';
@@ -619,7 +606,7 @@ const LeaveRequestsPage = () => {
         confirmText="Cancel"
         cancelText="Keep Request"
         onConfirm={confirmDeleteRequest}
-        onCancel={cancelDeleteRequest}
+        onClose={cancelDeleteRequest}
         variant="danger"
       />
     </div>
