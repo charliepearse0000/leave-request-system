@@ -37,7 +37,6 @@ const EditUserForm: React.FC<EditUserFormProps> = ({ user, onUserUpdated, onCanc
         const rolesData = await apiService.makeAuthenticatedRequest<Role[]>('/api/roles');
         setRoles(rolesData);
       } catch (error) {
-        console.error('Error fetching roles:', error);
         showError('Failed to load roles');
       }
     };
@@ -122,7 +121,6 @@ const EditUserForm: React.FC<EditUserFormProps> = ({ user, onUserUpdated, onCanc
       showSuccess('User updated successfully!');
       onUserUpdated(updatedUser);
     } catch (error: any) {
-      console.error('Error updating user:', error);
       showError(error.message || 'Failed to update user');
     } finally {
       setIsSubmitting(false);

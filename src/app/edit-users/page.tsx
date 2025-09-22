@@ -53,7 +53,6 @@ export default function EditUsersPage() {
       const usersData = await apiService.makeAuthenticatedRequest<UserProfile[]>('/api/users');
       setUsers(usersData);
     } catch (error) {
-      console.error('Error fetching users:', error);
       showError('Failed to load users');
     } finally {
       setIsLoading(false);
@@ -92,7 +91,6 @@ export default function EditUsersPage() {
       setUsers(prev => prev.filter(user => user.id !== userToDelete.id));
       showSuccess(`User ${userToDelete.firstName} ${userToDelete.lastName} has been deleted successfully.`);
     } catch (error: any) {
-      console.error('Error deleting user:', error);
       showError(error.message || 'Failed to delete user');
     } finally {
       setIsDeleting(false);
