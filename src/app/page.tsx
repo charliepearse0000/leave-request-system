@@ -1,13 +1,12 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { ClockIcon, UserGroupIcon } from '@heroicons/react/24/outline';
 import { useBalance } from './contexts/BalanceContext';
 import { useToast } from './contexts/ToastContext';
 import Header from './components/Header';
 import Card from './components/Card';
-import LoginForm from './components/LoginForm';
 import { companySettings } from './services/company-settings';
 
 
@@ -25,78 +24,44 @@ interface User {
 }
 
 export default function Home() {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  const router = useRouter();
+  
+  const authState = useMemo(() => {
+    if (typeof window === 'undefined') {
+      return { user: null, isAuthenticated: false };
+    }
+    
+    const token = localStorage.getItem('authToken');
+    const userData = localStorage.getItem('userData');
+    
+    if (!token || !userData) {
+      return { user: null, isAuthenticated: false };
+    }
+    
+    try {
+      const parsedUser = JSON.parse(userData);
+      return { user: parsedUser, isAuthenticated: true };
+    } catch {
+      return { user: null, isAuthenticated: false };
+    }
+  }, []);
+  
+  useEffect(() => {
+    if (!authState.isAuthenticated) {
+      router.push('/login');
+    }
+  }, [authState.isAuthenticated, router]);
+  
   const { balance, loading: balanceLoading, refreshBalance } = useBalance();
   const { showSuccess, showError } = useToast();
-  const router = useRouter();
 
   useEffect(() => {
-    const checkAuth = async () => {
-      if (typeof window === 'undefined') {
-        setLoading(false);
-        return;
-      }
-      
-      const token = localStorage.getItem('authToken');
-      const userData = localStorage.getItem('userData');
-      
-      if (!token || !userData) {
-        setLoading(false);
-        return;
-      }
-      
-      try {
-        const parsedUser = JSON.parse(userData);
-        setUser(parsedUser);
-        
-        // Fetch balance data separately for dynamic updates
-        await refreshBalance();
-      } catch (error) {
-        // Still show basic user info even if profile fetch fails
-        try {
-          const parsedUser = JSON.parse(userData);
-          setUser(parsedUser);
-        } catch (parseError) {
-          localStorage.removeItem('authToken');
-          localStorage.removeItem('userData');
-        }
-      } finally {
-        setLoading(false);
-      }
-    };
+    if (authState.isAuthenticated && authState.user) {
+      refreshBalance();
+    }
+  }, [authState.isAuthenticated, authState.user]);
 
-    checkAuth();
-  }, [router, refreshBalance]);
-
-  // Show login form if not authenticated
-  if (!user && !loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-        <div className="sm:mx-auto sm:w-full sm:max-w-md">
-          <div className="text-center">
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-              Leave Request System
-            </h1>
-            <p className="text-gray-600 dark:text-gray-400">
-              Please sign in to your account
-            </p>
-          </div>
-          <LoginForm />
-        </div>
-      </div>
-    );
-  }
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-      </div>
-    );
-  }
-
-  if (!user) {
+  if (!authState.isAuthenticated || !authState.user) {
     return null;
   }
 
@@ -113,7 +78,7 @@ export default function Home() {
                   Dashboard
                 </h1>
                 <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                  Welcome back, {user.firstName}! Manage your leave requests and view your balance.
+                  Welcome back, {authState.user.firstName}! Manage your leave requests and view your balance.
                 </p>
               </div>
             </div>
@@ -250,7 +215,7 @@ export default function Home() {
               </Card.Content>
             </Card>
 
-            {(user.role === 'manager' || user.role === 'admin') && (
+            {(authState.user.role === 'manager' || authState.user.role === 'admin') && (
               <Card 
                 onClick={() => router.push('/approve-requests')}
                 variant="clickable"
@@ -265,7 +230,7 @@ export default function Home() {
                     <div className="ml-4">
                       <Card.Title>Approve Requests</Card.Title>
                       <Card.Description>
-                        {user.role === 'admin' 
+                        {authState.user.role === 'admin' 
                           ? 'Review and approve all company requests' 
                           : 'Review and approve team requests'
                         }
@@ -277,7 +242,7 @@ export default function Home() {
               </Card>
             )}
 
-            {user.role === 'admin' && (
+            {authState.user.role === 'admin' && (
               <Card 
                 onClick={() => router.push('/edit-users')}
                 variant="clickable"
@@ -303,7 +268,7 @@ export default function Home() {
               </Card>
             )}
 
-            {user.role === 'admin' && (
+            {authState.user.role === 'admin' && (
               <Card 
                 onClick={() => router.push('/company-settings')}
                 variant="clickable"

@@ -24,7 +24,6 @@ export default function LoginForm() {
   const [errors, setErrors] = useState<FormErrors>({});
   const [isLoading, setIsLoading] = useState(false);
   const [submitError, setSubmitError] = useState<string>('');
-  const [successMessage, setSuccessMessage] = useState<string>('');
 
   const validateEmail = (email: string): string | undefined => {
     if (!email) {
@@ -64,7 +63,6 @@ export default function LoginForm() {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
     
-    // Clear error when user starts typing
     if (errors[name as keyof FormErrors]) {
       setErrors(prev => ({ ...prev, [name]: undefined }));
     }
@@ -73,10 +71,8 @@ export default function LoginForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Clear previous messages
     setErrors({});
     setSubmitError('');
-    setSuccessMessage('');
     
     if (!validateForm()) {
       return;
@@ -94,12 +90,8 @@ export default function LoginForm() {
       
       localStorage.setItem('authToken', response.token);
       localStorage.setItem('userData', JSON.stringify(response.user));
-      setSuccessMessage('Login successful!');
       
       router.push('/');
-      setTimeout(() => {
-        window.location.reload();
-      }, 100);
       
     } catch (error) {
       if (error instanceof Error && 'status' in error) {
@@ -198,21 +190,6 @@ export default function LoginForm() {
               </p>
             )}
           </div>
-
-          {successMessage && (
-            <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-md p-4">
-              <div className="flex">
-                <div className="text-green-400">
-                  <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                  </svg>
-                </div>
-                <div className="ml-3">
-                  <p className="text-sm text-green-800 dark:text-green-200">{successMessage}</p>
-                </div>
-              </div>
-            </div>
-          )}
 
           {submitError && (
             <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md p-4">
