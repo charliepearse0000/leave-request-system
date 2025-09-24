@@ -8,7 +8,7 @@ interface CardProps {
   className?: string;
   onClick?: () => void;
   variant?: 'default' | 'clickable' | 'bordered';
-  borderColor?: 'blue' | 'green' | 'yellow' | 'purple' | 'red' | 'indigo';
+  borderColor?: 'blue' | 'green' | 'yellow' | 'purple' | 'red' | 'indigo' | 'orange';
   hover?: boolean;
 }
 
@@ -24,7 +24,7 @@ interface CardContentProps {
 
 interface CardIconProps {
   icon: ReactNode;
-  color?: 'blue' | 'green' | 'yellow' | 'purple' | 'red' | 'indigo';
+  color?: 'blue' | 'green' | 'yellow' | 'purple' | 'red' | 'indigo' | 'orange';
   className?: string;
 }
 
@@ -75,7 +75,8 @@ const Card: React.FC<CardProps> & {
     yellow: 'border-l-4 border-yellow-500',
     purple: 'border-l-4 border-purple-500',
     red: 'border-l-4 border-red-500',
-    indigo: 'border-l-4 border-indigo-500'
+    indigo: 'border-l-4 border-indigo-500',
+    orange: 'border-l-4 border-orange-500'
   }[borderColor] : '';
 
   const combinedClasses = [
@@ -122,7 +123,8 @@ const CardIcon: React.FC<CardIconProps> = ({ icon, color = 'blue', className = '
     yellow: 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400',
     purple: 'bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400',
     red: 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400',
-    indigo: 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400'
+    indigo: 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400',
+    orange: 'bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400'
   }[color];
 
   return (

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { getRoleBadgeClasses } from '../utils/roleColors';
 
 interface User {
   id: string;
@@ -160,8 +161,13 @@ export default function Header({
                             Role
                           </dt>
                           <dd className="mt-1">
-                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-                              {currentUser.role.name}
+                            <span className={getRoleBadgeClasses(typeof currentUser.role === 'string' ? currentUser.role : currentUser.role?.name)}>
+                              {(() => {
+                                const roleName = typeof currentUser.role === 'string' ? currentUser.role : currentUser.role?.name;
+                                return roleName ? 
+                                  roleName.charAt(0).toUpperCase() + roleName.slice(1) : 
+                                  'Employee';
+                              })()}
                             </span>
                           </dd>
                         </div>

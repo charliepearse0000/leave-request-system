@@ -25,32 +25,29 @@ interface User {
 
 export default function Home() {
   const router = useRouter();
+  const [authState, setAuthState] = useState({ user: null, isAuthenticated: false });
+  const [isClient, setIsClient] = useState(false);
   
-  const authState = useMemo(() => {
-    if (typeof window === 'undefined') {
-      return { user: null, isAuthenticated: false };
-    }
+  useEffect(() => {
+    setIsClient(true);
     
     const token = localStorage.getItem('authToken');
     const userData = localStorage.getItem('userData');
     
     if (!token || !userData) {
-      return { user: null, isAuthenticated: false };
+      setAuthState({ user: null, isAuthenticated: false });
+      router.push('/login');
+      return;
     }
     
     try {
       const parsedUser = JSON.parse(userData);
-      return { user: parsedUser, isAuthenticated: true };
+      setAuthState({ user: parsedUser, isAuthenticated: true });
     } catch {
-      return { user: null, isAuthenticated: false };
-    }
-  }, []);
-  
-  useEffect(() => {
-    if (!authState.isAuthenticated) {
+      setAuthState({ user: null, isAuthenticated: false });
       router.push('/login');
     }
-  }, [authState.isAuthenticated, router]);
+  }, [router]);
   
   const { balance, loading: balanceLoading, refreshBalance } = useBalance();
   const { showSuccess, showError } = useToast();
@@ -60,6 +57,17 @@ export default function Home() {
       refreshBalance();
     }
   }, [authState.isAuthenticated, authState.user]);
+
+  // Show loading state during initial client-side hydration
+  if (!isClient) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+        </div>
+      </div>
+    );
+  }
 
   if (!authState.isAuthenticated || !authState.user) {
     return null;
@@ -132,16 +140,16 @@ export default function Home() {
                       </div>
                     </div>
                   </div>
-                  <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4 border border-green-200 dark:border-green-700">
+                  <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 border border-blue-200 dark:border-blue-700">
                     <div className="flex items-center justify-between">
                       <div>
-                        <h3 className="text-sm font-medium text-green-800 dark:text-green-200">Sick Leave</h3>
-                        <p className="text-2xl font-bold text-green-900 dark:text-green-100">
+                        <h3 className="text-sm font-medium text-blue-800 dark:text-blue-200">Sick Leave</h3>
+                        <p className="text-2xl font-bold text-blue-900 dark:text-blue-100">
                           {balance.sickLeaveBalance}/{companySettings.getDefaultSickLeaveAllowance()}
                         </p>
-                        <p className="text-sm text-green-600 dark:text-green-300">days remaining</p>
+                        <p className="text-sm text-blue-600 dark:text-blue-300">days remaining</p>
                       </div>
-                      <div className="text-green-500">
+                      <div className="text-blue-500">
                         <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                         </svg>
@@ -194,12 +202,12 @@ export default function Home() {
             <Card 
               onClick={() => router.push('/requests')}
               variant="clickable"
-              borderColor="green"
+              borderColor="blue"
             >
               <Card.Content>
                 <div className="flex items-center">
                   <Card.Icon 
-                    color="green"
+                    color="blue"
                     icon={
                       <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
@@ -219,12 +227,13 @@ export default function Home() {
               <Card 
                 onClick={() => router.push('/approve-requests')}
                 variant="clickable"
-                borderColor="yellow"
+                borderColor="orange"
+                color="orange"
               >
                 <Card.Content>
                   <div className="flex items-center">
                     <Card.Icon 
-                      color="yellow"
+                      color="orange"
                       icon={<ClockIcon className="w-6 h-6" />}
                     />
                     <div className="ml-4">
@@ -246,12 +255,12 @@ export default function Home() {
               <Card 
                 onClick={() => router.push('/edit-users')}
                 variant="clickable"
-                borderColor="purple"
+                borderColor="red"
               >
                 <Card.Content>
                   <div className="flex items-center">
                     <Card.Icon 
-                      color="purple"
+                      color="red"
                       icon={
                         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -272,12 +281,12 @@ export default function Home() {
               <Card 
                 onClick={() => router.push('/company-settings')}
                 variant="clickable"
-                borderColor="indigo"
+                borderColor="red"
               >
                 <Card.Content>
                   <div className="flex items-center">
                     <Card.Icon 
-                      color="indigo"
+                      color="red"
                       icon={
                         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
