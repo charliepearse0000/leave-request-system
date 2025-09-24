@@ -34,9 +34,9 @@ const EditUserForm: React.FC<EditUserFormProps> = ({ user, onUserUpdated, onCanc
   useEffect(() => {
     const fetchRoles = async () => {
       try {
-        const rolesData = await apiService.makeAuthenticatedRequest<Role[]>('/api/roles');
+        const rolesData = await apiService.getRoles();
         setRoles(rolesData);
-      } catch (error) {
+      } catch {
         showError('Failed to load roles');
       }
     };
@@ -87,21 +87,15 @@ const EditUserForm: React.FC<EditUserFormProps> = ({ user, onUserUpdated, onCanc
     setIsSubmitting(true);
     try {
       // Update user basic info
-      await apiService.makeAuthenticatedRequest(`/api/users/${user.id}`, {
-        method: 'PUT',
-        body: JSON.stringify({
-          firstName: formData.firstName.trim(),
-          lastName: formData.lastName.trim(),
-          email: formData.email.trim()
-        })
+      await apiService.updateUser(user.id, {
+        firstName: formData.firstName.trim(),
+        lastName: formData.lastName.trim(),
+        email: formData.email.trim()
       });
 
       // Update role if changed
       if (formData.roleId !== user.role.id) {
-        await apiService.makeAuthenticatedRequest(`/api/users/${user.id}/role`, {
-          method: 'POST',
-          body: JSON.stringify({ roleId: formData.roleId })
-        });
+        await apiService.updateUserRole(user.id, formData.roleId);
       }
 
       // Update leave balances if changed
@@ -111,13 +105,14 @@ const EditUserForm: React.FC<EditUserFormProps> = ({ user, onUserUpdated, onCanc
         updatedUser = await apiService.updateStaffAllowance(user.id, formData.annualLeaveBalance, formData.sickLeaveBalance);
       } else {
         // Fetch updated user data if no leave balance changes
-        updatedUser = await apiService.makeAuthenticatedRequest<UserProfile>(`/api/users/${user.id}`);
+        updatedUser = await apiService.getUser(user.id);
       }
       
       showSuccess('User updated successfully!');
       onUserUpdated(updatedUser);
-    } catch (error: any) {
-      showError(error.message || 'Failed to update user');
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to update user';
+      showError(errorMessage);
     } finally {
       setIsSubmitting(false);
     }

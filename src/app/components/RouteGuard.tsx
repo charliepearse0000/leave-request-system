@@ -17,7 +17,7 @@ export default function RouteGuard({
   requireAuth = true,
   redirectTo 
 }: RouteGuardProps) {
-  const { isAuthenticated, isLoading, hasRole, getUserRole } = useAuth();
+  const { isAuthenticated, isLoading, hasRole } = useAuth();
   const router = useRouter();
 
   useEffect(() => {

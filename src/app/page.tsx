@@ -1,13 +1,12 @@
 'use client';
 
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ClockIcon, UserGroupIcon } from '@heroicons/react/24/outline';
+import { ClockIcon } from '@heroicons/react/24/outline';
 import { useBalance } from './contexts/BalanceContext';
-import { useToast } from './contexts/ToastContext';
 import Header from './components/Header';
 import Card from './components/Card';
-import { AdminOnly, ManagerOnly, AdminOrManager } from './components/RoleBasedAccess';
+import { AdminOnly, AdminOrManager } from './components/RoleBasedAccess';
 import { companySettings } from './services/company-settings';
 
 
@@ -51,13 +50,12 @@ export default function Home() {
   }, [router]);
   
   const { balance, loading: balanceLoading, refreshBalance } = useBalance();
-  const { showSuccess, showError } = useToast();
 
   useEffect(() => {
     if (authState.isAuthenticated && authState.user) {
       refreshBalance();
     }
-  }, [authState.isAuthenticated, authState.user]);
+  }, [authState.isAuthenticated, authState.user, refreshBalance]);
 
   // Show loading state during initial client-side hydration
   if (!isClient) {
@@ -78,7 +76,7 @@ export default function Home() {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
       <Header title="Dashboard" />
 
-      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+      <main id="main-content" role="main" className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8" aria-label="Dashboard content" tabIndex={-1}>
         <div className="px-4 py-6 sm:px-0">
           <div className="mb-6">
             <div className="flex items-center justify-between">
@@ -92,12 +90,13 @@ export default function Home() {
               </div>
             </div>
           </div>
-          <Card variant="default" className="mb-6">
-            <Card.Header>
-              <div className="flex justify-between items-center">
-                <h3 className="text-lg font-medium text-gray-900 dark:text-white">
-                  Leave Balance
-                </h3>
+          <section aria-labelledby="leave-balance-heading">
+            <Card variant="default" className="mb-6">
+              <Card.Header>
+                <div className="flex justify-between items-center">
+                  <h2 id="leave-balance-heading" className="text-lg font-medium text-gray-900 dark:text-white">
+                    Leave Balance
+                  </h2>
                 <button
                   onClick={refreshBalance}
                   disabled={balanceLoading}
@@ -125,32 +124,32 @@ export default function Home() {
             <Card.Content className="px-6 py-4">
               {balance ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 border border-blue-200 dark:border-blue-700">
+                  <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 border border-blue-200 dark:border-blue-700" role="region" aria-labelledby="annual-leave-heading">
                     <div className="flex items-center justify-between">
                       <div>
-                        <h3 className="text-sm font-medium text-blue-800 dark:text-blue-200">Annual Leave</h3>
-                        <p className="text-2xl font-bold text-blue-900 dark:text-blue-100">
+                        <h3 id="annual-leave-heading" className="text-sm font-medium text-blue-800 dark:text-blue-200">Annual Leave</h3>
+                        <p className="text-2xl font-bold text-blue-900 dark:text-blue-100" aria-label={`${balance.annualLeaveBalance} out of ${companySettings.getDefaultAnnualLeaveAllowance()} annual leave days remaining`}>
                           {balance.annualLeaveBalance}/{companySettings.getDefaultAnnualLeaveAllowance()}
                         </p>
                         <p className="text-sm text-blue-600 dark:text-blue-300">days remaining</p>
                       </div>
-                      <div className="text-blue-500">
+                      <div className="text-blue-500" aria-hidden="true">
                         <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                         </svg>
                       </div>
                     </div>
                   </div>
-                  <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 border border-blue-200 dark:border-blue-700">
+                  <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 border border-blue-200 dark:border-blue-700" role="region" aria-labelledby="sick-leave-heading">
                     <div className="flex items-center justify-between">
                       <div>
-                        <h3 className="text-sm font-medium text-blue-800 dark:text-blue-200">Sick Leave</h3>
-                        <p className="text-2xl font-bold text-blue-900 dark:text-blue-100">
+                        <h3 id="sick-leave-heading" className="text-sm font-medium text-blue-800 dark:text-blue-200">Sick Leave</h3>
+                        <p className="text-2xl font-bold text-blue-900 dark:text-blue-100" aria-label={`${balance.sickLeaveBalance} out of ${companySettings.getDefaultSickLeaveAllowance()} sick leave days remaining`}>
                           {balance.sickLeaveBalance}/{companySettings.getDefaultSickLeaveAllowance()}
                         </p>
                         <p className="text-sm text-blue-600 dark:text-blue-300">days remaining</p>
                       </div>
-                      <div className="text-blue-500">
+                      <div className="text-blue-500" aria-hidden="true">
                         <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                         </svg>
@@ -174,8 +173,11 @@ export default function Home() {
               )}
             </Card.Content>
           </Card>
+          </section>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
+          <section aria-labelledby="navigation-heading">
+            <h2 id="navigation-heading" className="sr-only">Navigation Options</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
             <Card 
               onClick={() => router.push('/new-request')}
               variant="clickable"
@@ -305,6 +307,7 @@ export default function Home() {
             </AdminOnly>
 
           </div>
+          </section>
 
         </div>
       </main>

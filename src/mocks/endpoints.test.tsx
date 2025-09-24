@@ -1,12 +1,12 @@
 // MSW Mock Endpoints Integration Tests
 // This test verifies that MSW handlers are properly configured and can be used
 
+import fs from 'fs'
+import path from 'path'
+
 describe('MSW Mock Endpoints Integration Tests', () => {
   describe('MSW Handlers Configuration', () => {
     it('should have handlers properly configured for testing', () => {
-      const fs = require('fs')
-      const path = require('path')
-      
       const handlersPath = path.join(__dirname, 'handlers.ts')
       const handlersContent = fs.readFileSync(handlersPath, 'utf8')
       
@@ -23,9 +23,6 @@ describe('MSW Mock Endpoints Integration Tests', () => {
     })
     
     it('should export handlers array for MSW server', () => {
-      const fs = require('fs')
-      const path = require('path')
-      
       const handlersPath = path.join(__dirname, 'handlers.ts')
       const handlersContent = fs.readFileSync(handlersPath, 'utf8')
       

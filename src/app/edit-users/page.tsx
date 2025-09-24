@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useToast } from '../contexts/ToastContext';
 import { apiService, UserProfile } from '../services/api';
@@ -12,12 +12,6 @@ import Card from '../components/Card';
 import ConfirmationDialog from '../components/ConfirmationDialog';
 import RouteGuard from '../components/RouteGuard';
 import { getRoleBadgeClasses, getRoleCardClasses, getRoleTextClasses } from '../utils/roleColors';
-
-interface Role {
-  id: string;
-  name: string;
-  description: string;
-}
 
 function EditUsersContent() {
   const [users, setUsers] = useState<UserProfile[]>([]);
@@ -36,19 +30,19 @@ function EditUsersContent() {
 
   useEffect(() => {
     fetchUsers();
-  }, [router]);
+  }, [fetchUsers]);
 
-  const fetchUsers = async () => {
+  const fetchUsers = useCallback(async () => {
     try {
       setIsLoading(true);
       const usersData = await apiService.getUsers();
       setUsers(usersData);
-    } catch (error) {
+    } catch {
       showError('Failed to load users');
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [showError]);
 
   const handleEditUser = (user: UserProfile) => {
     setSelectedUser(user);
@@ -81,8 +75,9 @@ function EditUsersContent() {
       await apiService.deleteUser(userToDelete.id);
       setUsers(prev => prev.filter(user => user.id !== userToDelete.id));
       showSuccess(`User ${userToDelete.firstName} ${userToDelete.lastName} has been deleted successfully.`);
-    } catch (error: any) {
-      showError(error.message || 'Failed to delete user');
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to delete user';
+      showError(errorMessage);
     } finally {
       setIsDeleting(false);
       setShowDeleteDialog(false);

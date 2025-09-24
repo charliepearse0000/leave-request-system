@@ -28,23 +28,23 @@ export const handlers = [
           id: 1,
           employeeId: 1,
           type: 'annual',
-          startDate: '2024-01-15',
-          endDate: '2024-01-19',
+          startDate: '2025-01-15',
+          endDate: '2025-01-19',
           duration: 5,
           status: 'approved',
           reason: 'Family vacation',
-          appliedDate: '2024-01-01'
+          appliedDate: '2025-01-01'
         },
         {
           id: 2,
           employeeId: 1,
           type: 'sick',
-          startDate: '2024-02-10',
-          endDate: '2024-02-12',
+          startDate: '2025-02-10',
+          endDate: '2025-02-12',
           duration: 3,
           status: 'pending',
           reason: 'Medical appointment',
-          appliedDate: '2024-02-08'
+          appliedDate: '2025-02-08'
         }
       ]
     })
@@ -59,12 +59,12 @@ export const handlers = [
         id: 3,
         employeeId: 1,
         type: 'annual',
-        startDate: '2024-03-01',
-        endDate: '2024-03-05',
+        startDate: '2025-03-01',
+        endDate: '2025-03-05',
         duration: 5,
         status: 'pending',
         reason: 'Personal time off',
-        appliedDate: '2024-02-20'
+        appliedDate: '2025-02-20'
       }
     })
   }),

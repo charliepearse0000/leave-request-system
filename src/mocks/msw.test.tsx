@@ -1,38 +1,12 @@
-/**
- * MSW (Mock Service Worker) Setup Guide
- * 
- * This file demonstrates how to use MSW in your tests.
- * MSW is already installed and configured in this project.
- * 
- * To use MSW in a test file:
- * 
- * 1. Import the necessary MSW functions
- * 2. Set up the server with your handlers
- * 3. Start/stop the server in your test lifecycle
- * 
- * Example usage:
- * 
- * import { setupServer } from 'msw/node'
- * import { http, HttpResponse } from 'msw'
- * import { handlers } from './handlers'
- * 
- * const server = setupServer(...handlers)
- * 
- * beforeAll(() => server.listen())
- * afterEach(() => server.resetHandlers())
- * afterAll(() => server.close())
- * 
- * // Your tests here...
- */
-
-import fs from 'fs'
-import path from 'path'
+import { describe, it, expect } from '@jest/globals'
+import * as path from 'path'
+import * as fs from 'fs'
+import packageJson from '../../package.json'
 
 // This is a placeholder test to verify MSW is properly installed
 describe('MSW Setup', () => {
   it('should have MSW package available', () => {
     // Test that MSW package is installed
-    const packageJson = require('../../package.json')
     expect(packageJson.devDependencies.msw).toBeDefined()
     expect(packageJson.devDependencies.msw).toMatch(/^[\^~]?\d+\.\d+\.\d+/)
   })

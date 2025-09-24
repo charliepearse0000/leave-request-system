@@ -1,18 +1,17 @@
 @import "tailwindcss";
 
 :root {
-  /* Light theme colors */
   --background: #ffffff;
   --foreground: #171717;
   --primary: #0651f1;
   --primary-hover: #1d4ed8;
-  --secondary: #64748b;
+  --secondary: #475569;
   --accent: #f1f5f9;
-  --border: #e2e8f0;
+  --border: #d1d5db;
   --muted: #f8fafc;
-  --success: #10b981;
-  --warning: #f59e0b;
-  --error: #ef4444;
+  --success: #047857;
+  --warning: #b45309;
+  --error: #dc2626;
   
   /* Spacing scale */
   --spacing-xs: 0.25rem;
@@ -43,34 +42,19 @@
   --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-primary: var(--primary);
-  --color-secondary: var(--secondary);
-  --color-accent: var(--accent);
-  --color-border: var(--border);
-  --color-muted: var(--muted);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
 @media (prefers-color-scheme: dark) {
   :root {
-    /* Dark theme colors */
     --background: #0f172a;
     --foreground: #f1f5f9;
-    --primary: #3b82f6;
+    --primary: #2563eb;
     --primary-hover: #2563eb;
-    --secondary: #64748b;
+    --secondary: #94a3b8;
     --accent: #1e293b;
-    --border: #334155;
+    --border: #475569;
     --muted: #0f172a;
     --success: #10b981;
     --warning: #f59e0b;
     --error: #ef4444;
-    
-    /* Dark theme shadows */
     --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
     --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.4), 0 2px 4px -2px rgb(0 0 0 / 0.4);
     --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.4), 0 4px 6px -4px rgb(0 0 0 / 0.4);
@@ -131,5 +115,110 @@ body {
 @media (prefers-color-scheme: dark) {
   .gradient-bg {
     background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  }
+}
+
+/* Focus indicators */
+*:focus {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+*:focus:not(:focus-visible) {
+  outline: none;
+}
+
+*:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px rgb(37 99 235 / 0.15);
+}
+button:focus-visible,
+.btn-primary:focus-visible {
+  outline: 2px solid var(--foreground);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px rgb(37 99 235 / 0.15);
+}
+
+a:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+}
+
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 4px rgb(37 99 235 / 0.15);
+}
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 6px;
+  background: var(--primary);
+  color: white;
+  padding: 8px 16px;
+  text-decoration: none;
+  border-radius: 4px;
+  z-index: 1000;
+  font-weight: 600;
+  transition: top 0.2s ease;
+}
+
+.skip-link:focus {
+  top: 6px;
+  outline: 2px solid var(--foreground);
+  outline-offset: 2px;
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  
+  .skip-link {
+    transition: none;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  *:focus-visible {
+    outline: 3px solid;
+    outline-offset: 2px;
+  }
+  
+  button:focus-visible,
+  .btn-primary:focus-visible {
+    outline: 3px solid;
+    outline-offset: 2px;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  *:focus-visible {
+    box-shadow: 0 0 0 4px rgb(96 165 250 / 0.25);
+  }
+  
+  button:focus-visible,
+  .btn-primary:focus-visible {
+    outline-color: var(--foreground);
+    box-shadow: 0 0 0 4px rgb(96 165 250 / 0.25);
+  }
+  
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible {
+    box-shadow: 0 0 0 4px rgb(96 165 250 / 0.25);
   }
 }

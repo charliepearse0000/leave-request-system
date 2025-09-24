@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useToast } from '../contexts/ToastContext';
 import { apiService } from '../services/api';
 import { companySettings } from '../services/company-settings';
+import { useFocusTrap } from '../utils/focus-trap';
 
 interface AddStaffFormProps {
   isOpen: boolean;
@@ -31,13 +32,20 @@ const AddStaffForm: React.FC<AddStaffFormProps> = ({ isOpen, onStaffAdded, onCan
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<{[key: string]: string}>({});
   const { showSuccess, showError } = useToast();
+  
+  const modalRef = useRef<HTMLDivElement>(null);
+  useFocusTrap(modalRef, isOpen, {
+    initialFocus: 'input[name="firstName"]',
+    escapeDeactivates: true,
+    onDeactivate: onCancel,
+  });
 
   useEffect(() => {
     const fetchRoles = async () => {
       try {
-        const rolesData = await apiService.makeAuthenticatedRequest<Role[]>('/api/roles');
+        const rolesData = await apiService.getRoles();
         setRoles(rolesData);
-      } catch (error) {
+      } catch {
         showError('Failed to load roles');
       }
     };
@@ -110,11 +118,11 @@ const AddStaffForm: React.FC<AddStaffFormProps> = ({ isOpen, onStaffAdded, onCan
       
       showSuccess('Staff member added successfully!');
       onStaffAdded();
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Handle specific error types
       let errorMessage = 'Failed to add staff member';
       
-      if (error.message) {
+      if (error instanceof Error && error.message) {
         if (error.message.includes('email') && error.message.includes('already')) {
           errorMessage = 'This email address is already registered. Please use a different email.';
         } else if (error.message.includes('User registration failed')) {
@@ -153,9 +161,13 @@ const AddStaffForm: React.FC<AddStaffFormProps> = ({ isOpen, onStaffAdded, onCan
 
   return (
     <div 
+      ref={modalRef}
       className="fixed inset-0 z-[9999] overflow-y-auto transition-opacity duration-300"
       style={{ backgroundColor: 'rgba(0, 0, 0, 0.25)' }}
       onClick={onCancel}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="add-staff-title"
     >
       <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center">
         <div 
@@ -164,14 +176,15 @@ const AddStaffForm: React.FC<AddStaffFormProps> = ({ isOpen, onStaffAdded, onCan
         >
         <div className="p-6">
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+            <h2 id="add-staff-title" className="text-xl font-semibold text-gray-900 dark:text-white">
               Add New Staff Member
             </h2>
             <button
               onClick={onCancel}
               className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+              aria-label="Close dialog"
             >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
@@ -192,9 +205,12 @@ const AddStaffForm: React.FC<AddStaffFormProps> = ({ isOpen, onStaffAdded, onCan
                   className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white ${
                     errors.firstName ? 'border-red-500' : 'border-gray-300'
                   }`}
+                  aria-describedby={errors.firstName ? "firstName-error" : undefined}
+                  aria-invalid={errors.firstName ? "true" : "false"}
+                  required
                 />
                 {errors.firstName && (
-                  <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.firstName}</p>
+                  <p id="firstName-error" className="mt-1 text-sm text-red-600 dark:text-red-400" role="alert">{errors.firstName}</p>
                 )}
               </div>
 
@@ -211,9 +227,12 @@ const AddStaffForm: React.FC<AddStaffFormProps> = ({ isOpen, onStaffAdded, onCan
                   className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white ${
                     errors.lastName ? 'border-red-500' : 'border-gray-300'
                   }`}
+                  aria-describedby={errors.lastName ? "lastName-error" : undefined}
+                  aria-invalid={errors.lastName ? "true" : "false"}
+                  required
                 />
                 {errors.lastName && (
-                  <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.lastName}</p>
+                  <p id="lastName-error" className="mt-1 text-sm text-red-600 dark:text-red-400" role="alert">{errors.lastName}</p>
                 )}
               </div>
             </div>
@@ -232,9 +251,13 @@ const AddStaffForm: React.FC<AddStaffFormProps> = ({ isOpen, onStaffAdded, onCan
                   className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white ${
                     errors.email ? 'border-red-500' : 'border-gray-300'
                   }`}
+                  aria-describedby={errors.email ? "email-error" : undefined}
+                  aria-invalid={errors.email ? "true" : "false"}
+                  required
+                  autoComplete="email"
                 />
                 {errors.email && (
-                  <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.email}</p>
+                  <p id="email-error" className="mt-1 text-sm text-red-600 dark:text-red-400" role="alert">{errors.email}</p>
                 )}
               </div>
 
@@ -250,6 +273,9 @@ const AddStaffForm: React.FC<AddStaffFormProps> = ({ isOpen, onStaffAdded, onCan
                   className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white ${
                     errors.roleId ? 'border-red-500' : 'border-gray-300'
                   }`}
+                  aria-describedby={errors.roleId ? "roleId-error" : undefined}
+                  aria-invalid={errors.roleId ? "true" : "false"}
+                  required
                 >
                   <option value="">Select a role</option>
                   {roles.map((role) => (
@@ -259,7 +285,7 @@ const AddStaffForm: React.FC<AddStaffFormProps> = ({ isOpen, onStaffAdded, onCan
                   ))}
                 </select>
                 {errors.roleId && (
-                  <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.roleId}</p>
+                  <p id="roleId-error" className="mt-1 text-sm text-red-600 dark:text-red-400" role="alert">{errors.roleId}</p>
                 )}
               </div>
             </div>
@@ -277,9 +303,13 @@ const AddStaffForm: React.FC<AddStaffFormProps> = ({ isOpen, onStaffAdded, onCan
                 className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white ${
                   errors.password ? 'border-red-500' : 'border-gray-300'
                 }`}
+                aria-describedby={errors.password ? "password-error" : undefined}
+                aria-invalid={errors.password ? "true" : "false"}
+                required
+                autoComplete="new-password"
               />
               {errors.password && (
-                <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.password}</p>
+                <p id="password-error" className="mt-1 text-sm text-red-600 dark:text-red-400" role="alert">{errors.password}</p>
               )}
             </div>
 
@@ -302,12 +332,14 @@ const AddStaffForm: React.FC<AddStaffFormProps> = ({ isOpen, onStaffAdded, onCan
                   className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white ${
                     errors.annualLeaveBalance ? 'border-red-500' : 'border-gray-300'
                   }`}
+                  aria-describedby={`annualLeaveBalance-help${errors.annualLeaveBalance ? ' annualLeaveBalance-error' : ''}`}
+                  aria-invalid={errors.annualLeaveBalance ? "true" : "false"}
                 />
-                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                <p id="annualLeaveBalance-help" className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                   Leave empty to use company default.
                 </p>
                 {errors.annualLeaveBalance && (
-                  <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.annualLeaveBalance}</p>
+                  <p id="annualLeaveBalance-error" className="mt-1 text-sm text-red-600 dark:text-red-400" role="alert">{errors.annualLeaveBalance}</p>
                 )}
               </div>
 
@@ -329,12 +361,14 @@ const AddStaffForm: React.FC<AddStaffFormProps> = ({ isOpen, onStaffAdded, onCan
                   className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white ${
                     errors.sickLeaveBalance ? 'border-red-500' : 'border-gray-300'
                   }`}
+                  aria-describedby={`sickLeaveBalance-help${errors.sickLeaveBalance ? ' sickLeaveBalance-error' : ''}`}
+                  aria-invalid={errors.sickLeaveBalance ? "true" : "false"}
                 />
-                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                <p id="sickLeaveBalance-help" className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                   Leave empty to use company default.
                 </p>
                 {errors.sickLeaveBalance && (
-                  <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.sickLeaveBalance}</p>
+                  <p id="sickLeaveBalance-error" className="mt-1 text-sm text-red-600 dark:text-red-400" role="alert">{errors.sickLeaveBalance}</p>
                 )}
               </div>
             </div>

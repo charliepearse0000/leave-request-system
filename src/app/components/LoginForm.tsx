@@ -155,9 +155,12 @@ export default function LoginForm() {
               } text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400`}
               placeholder="Enter your email"
               autoComplete="email"
+              aria-describedby={errors.email ? "email-error" : undefined}
+              aria-invalid={errors.email ? "true" : "false"}
+              required
             />
             {errors.email && (
-              <p className="mt-1 text-sm text-red-600 dark:text-red-400">
+              <p id="email-error" className="mt-1 text-sm text-red-600 dark:text-red-400" role="alert">
                 {errors.email}
               </p>
             )}
@@ -183,16 +186,23 @@ export default function LoginForm() {
               } text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400`}
               placeholder="Enter your password"
               autoComplete="current-password"
+              aria-describedby={errors.password ? "password-error" : undefined}
+              aria-invalid={errors.password ? "true" : "false"}
+              required
             />
             {errors.password && (
-              <p className="mt-1 text-sm text-red-600 dark:text-red-400">
+              <p id="password-error" className="mt-1 text-sm text-red-600 dark:text-red-400" role="alert">
                 {errors.password}
               </p>
             )}
           </div>
 
           {submitError && (
-            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md p-4">
+            <div 
+              className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md p-4"
+              role="alert"
+              aria-live="polite"
+            >
               <div className="flex">
                 <div className="text-red-400">
                   <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">

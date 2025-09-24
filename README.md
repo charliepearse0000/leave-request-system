@@ -4,7 +4,7 @@
 
 This is a Next.js web application for managing employee leave requests. Employees can submit leave requests, track their status, and view their leave history. Administrators get tools to review and manage all requests across the organization.
 
-Built with Next.js 14, TypeScript, and Tailwind CSS. The backend API is included in this repo (in the API folder), so you can run everything locally without external dependencies.
+Built with Next.js 15, TypeScript, and Tailwind CSS. The backend API is included in this repo (in the API folder), so you can run everything locally without external dependencies.
 
 ### What's included
 - Employee dashboard for submitting and tracking leave requests
@@ -15,7 +15,7 @@ Built with Next.js 14, TypeScript, and Tailwind CSS. The backend API is included
 - Mock API setup for development and testing
 
 ### Tech stack
-- Next.js 14 with TypeScript
+- Next.js 15 with TypeScript
 - Tailwind CSS for styling
 - Jest + React Testing Library for testing
 - MSW (Mock Service Worker) for API mocking
@@ -183,7 +183,7 @@ npm run lint         # Check code style
 npm test             # Run tests
 ```
 
-This project uses Next.js 14 with TypeScript and Tailwind CSS. The backend API is in the `DONT EDIT ANYTHING IN HERE (API)` folder - don't modify it.
+This project uses Next.js 15 with TypeScript and Tailwind CSS. The backend API is in the `DONT EDIT ANYTHING IN HERE (API)` folder - don't modify it.
 
 ## Contributing
 

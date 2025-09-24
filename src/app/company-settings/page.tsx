@@ -10,7 +10,6 @@ import RouteGuard from '../components/RouteGuard';
 
 function CompanySettingsContent() {
   const [settings, setSettings] = useState<CompanySettings>(companySettings.getSettings());
-  const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const { showSuccess, showError } = useToast();
   const router = useRouter();
@@ -46,7 +45,7 @@ function CompanySettingsContent() {
       // Update settings
       companySettings.updateSettings(settings);
       showSuccess('Company settings updated successfully');
-    } catch (error) {
+    } catch {
       showError('Failed to update company settings');
     } finally {
       setIsSaving(false);

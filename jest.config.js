@@ -12,6 +12,8 @@ const customJestConfig = {
   testEnvironmentOptions: {
     customExportConditions: [''],
   },
+  maxWorkers: 1,
+  workerIdleMemoryLimit: '512MB',
   globals: {
     TextEncoder: require('util').TextEncoder,
     TextDecoder: require('util').TextDecoder,

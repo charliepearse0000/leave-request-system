@@ -39,12 +39,12 @@ This directory contains Mock Service Worker (MSW) configuration for testing purp
       "id": 1,
       "employeeId": 1,
       "type": "annual",
-      "startDate": "2024-01-15",
-      "endDate": "2024-01-19",
+      "startDate": "2025-01-15",
+      "endDate": "2025-01-19",
       "days": 5,
       "status": "approved",
       "reason": "Family vacation",
-      "appliedDate": "2024-01-01"
+      "appliedDate": "2025-01-01"
     }
   ]
 }
@@ -63,12 +63,12 @@ This directory contains Mock Service Worker (MSW) configuration for testing purp
     "id": 3,
     "employeeId": 1,
     "type": "annual",
-    "startDate": "2024-03-01",
-    "endDate": "2024-03-05",
+    "startDate": "2025-03-01",
+    "endDate": "2025-03-05",
     "days": 5,
     "status": "pending",
     "reason": "Personal time off",
-    "appliedDate": "2024-02-20"
+    "appliedDate": "2025-02-20"
   }
 }
 ```

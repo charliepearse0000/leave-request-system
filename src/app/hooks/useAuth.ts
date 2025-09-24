@@ -44,37 +44,7 @@ export const useAuth = () => {
     router.push('/');
   }, [router]);
 
-  useEffect(() => {
-    checkAuth();
-  }, []);
-
-  // Periodic token expiry check
-  useEffect(() => {
-    if (!authState.isAuthenticated) return;
-
-    const interval = setInterval(() => {
-      const token = localStorage.getItem('authToken');
-      if (!token) {
-        logout('expired');
-        return;
-      }
-
-      try {
-        const tokenPayload = JSON.parse(atob(token.split('.')[1]));
-        const currentTime = Math.floor(Date.now() / 1000);
-        
-        if (tokenPayload.exp < currentTime) {
-          logout('expired');
-        }
-      } catch (error) {
-        logout('expired');
-      }
-    }, 60000); // Check every minute
-
-    return () => clearInterval(interval);
-  }, [authState.isAuthenticated, logout]);
-
-  const checkAuth = () => {
+  const checkAuth = useCallback(() => {
     try {
       const token = localStorage.getItem('authToken');
       const userData = localStorage.getItem('userData');
@@ -108,7 +78,37 @@ export const useAuth = () => {
       console.error('Auth check failed:', error);
       logout();
     }
-  };
+  }, [logout]);
+
+  useEffect(() => {
+    checkAuth();
+  }, [checkAuth]);
+
+  // Periodic token expiry check
+  useEffect(() => {
+    if (!authState.isAuthenticated) return;
+
+    const interval = setInterval(() => {
+      const token = localStorage.getItem('authToken');
+      if (!token) {
+        logout('expired');
+        return;
+      }
+
+      try {
+        const tokenPayload = JSON.parse(atob(token.split('.')[1]));
+        const currentTime = Math.floor(Date.now() / 1000);
+        
+        if (tokenPayload.exp < currentTime) {
+          logout('expired');
+        }
+      } catch {
+        logout('expired');
+      }
+    }, 60000); // Check every minute
+
+    return () => clearInterval(interval);
+  }, [authState.isAuthenticated, logout]);
 
   const getUserRole = (): string => {
     if (!authState.user) return '';

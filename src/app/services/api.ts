@@ -283,7 +283,7 @@ class ApiService {
     });
   }
   async getTeamBalances(): Promise<TeamBalance[]> {
-    const users = await this.makeAuthenticatedRequest<any[]>('/api/users');
+    const users = await this.makeAuthenticatedRequest<UserProfile[]>('/api/users');
     return users.map(user => ({
       id: user.id,
       firstName: user.firstName,
@@ -336,21 +336,24 @@ class ApiService {
               sickLeaveChange: staffData.sickLeaveBalance || 10
             }),
           });
-        } catch (balanceError: any) {
-          throw new Error(`Failed to set leave balances: ${balanceError.message || 'Unknown error'}`);
+        } catch (balanceError: unknown) {
+          const errorMessage = balanceError instanceof Error ? balanceError.message : 'Unknown error';
+          throw new Error(`Failed to set leave balances: ${errorMessage}`);
         }
       }
 
       try {
         return await this.makeAuthenticatedRequest<UserProfile>(`/api/users/${newUser.id}`);
-      } catch (fetchError: any) {
-        throw new Error(`Failed to fetch updated user data: ${fetchError.message || 'Unknown error'}`);
+      } catch (fetchError: unknown) {
+        const errorMessage = fetchError instanceof Error ? fetchError.message : 'Unknown error';
+        throw new Error(`Failed to fetch updated user data: ${errorMessage}`);
       }
-    } catch (error: any) {
-      if (error.message && (error.message.includes('Failed to') || error.message.includes('User registration failed'))) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      if (errorMessage && (errorMessage.includes('Failed to') || errorMessage.includes('User registration failed'))) {
         throw error;
       }
-      throw new Error(`Failed to create staff member: ${error.message || 'Unknown error occurred'}`);
+      throw new Error(`Failed to create staff member: ${errorMessage}`);
     }
   }
   async updateStaffAllowance(staffId: string, annualLeaveBalance: number, sickLeaveBalance: number): Promise<UserProfile> {
@@ -373,6 +376,24 @@ class ApiService {
 
   async getUsers(): Promise<UserProfile[]> {
     return this.makeAuthenticatedRequest<UserProfile[]>('/api/users');
+  }
+
+  async updateUser(userId: string, userData: { firstName: string; lastName: string; email: string }): Promise<void> {
+    return this.makeAuthenticatedRequest<void>(`/api/users/${userId}`, {
+      method: 'PUT',
+      body: JSON.stringify(userData)
+    });
+  }
+
+  async updateUserRole(userId: string, roleId: string): Promise<void> {
+    return this.makeAuthenticatedRequest<void>(`/api/users/${userId}/role`, {
+      method: 'POST',
+      body: JSON.stringify({ roleId })
+    });
+  }
+
+  async getUser(userId: string): Promise<UserProfile> {
+    return this.makeAuthenticatedRequest<UserProfile>(`/api/users/${userId}`);
   }
 }
 

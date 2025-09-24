@@ -9,7 +9,9 @@
     "lint": "eslint",
     "test": "jest",
     "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage"
+    "test:coverage": "jest --coverage",
+    "test:accessibility": "node scripts/accessibility-audit.js",
+    "test:contrast": "node scripts/run-contrast-audit.js"
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",
@@ -20,6 +22,7 @@
     "zod": "^4.1.8"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.10.2",
     "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4",
     "@testing-library/jest-dom": "^6.8.0",
@@ -31,11 +34,13 @@
     "@types/react-dom": "^19",
     "@types/testing-library__jest-dom": "^5.14.9",
     "@types/testing-library__react": "^10.0.1",
+    "axe-core": "^4.10.3",
     "eslint": "^9",
     "eslint-config-next": "15.5.3",
     "jest": "^30.1.3",
     "jest-environment-jsdom": "^30.1.2",
     "msw": "^2.11.2",
+    "playwright": "^1.55.1",
     "tailwindcss": "^4",
     "typescript": "^5",
     "undici": "^6.21.3",

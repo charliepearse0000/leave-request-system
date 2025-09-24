@@ -17,7 +17,7 @@ export default function RoleBasedAccess({
   requireAuth = true,
   fallback = null,
 }: RoleBasedAccessProps) {
-  const { isAuthenticated, hasRole, getUserRole } = useAuth();
+  const { isAuthenticated, hasRole } = useAuth();
 
   // If authentication is required but user is not authenticated
   if (requireAuth && !isAuthenticated) {
@@ -28,8 +28,6 @@ export default function RoleBasedAccess({
   if (!requireAuth && !isAuthenticated) {
     return <>{children}</>;
   }
-
-  const userRole = getUserRole();
 
   // Check denied roles first
   if (deniedRoles.length > 0 && hasRole(deniedRoles)) {

@@ -4,6 +4,7 @@ import "./globals.css";
 import { BalanceProvider } from "./contexts/BalanceContext";
 import { ToastProvider } from "./contexts/ToastContext";
 import AuthEventListener from "./components/AuthEventListener";
+import SkipLink from "./components/SkipLink";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -30,10 +31,13 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen bg-background text-foreground`}
       >
+        <SkipLink />
         <ToastProvider>
           <AuthEventListener />
           <BalanceProvider>
-            {children}
+            <div id="root" role="application" aria-label="Leave Request System">
+              {children}
+            </div>
           </BalanceProvider>
         </ToastProvider>
       </body>

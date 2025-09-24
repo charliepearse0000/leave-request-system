@@ -38,7 +38,7 @@ export const BalanceProvider: React.FC<BalanceProviderProps> = ({ children }) =>
     try {
       const balanceData = await apiService.getLeaveBalance();
       setBalance(balanceData);
-    } catch (error) {
+    } catch {
       // Error handling without console logs
     } finally {
       setLoading(false);

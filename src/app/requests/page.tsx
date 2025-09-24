@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { ClockIcon, CheckCircleIcon, XCircleIcon, XMarkIcon, MinusCircleIcon } from '@heroicons/react/24/outline';
+import { ClockIcon, CheckCircleIcon, XCircleIcon, MinusCircleIcon } from '@heroicons/react/24/outline';
 import { apiService, type LeaveRequest, type ApiError } from '../services/api';
 import ConfirmationDialog from '../components/ConfirmationDialog';
 import { useBalance } from '../contexts/BalanceContext';
@@ -24,7 +24,7 @@ const LeaveRequestsPage = () => {
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [requestToDelete, setRequestToDelete] = useState<string | null>(null);
   const [isAdminView, setIsAdminView] = useState(false);
-  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [currentUser, setCurrentUser] = useState<{id: string; role: string} | null>(null);
   const { refreshBalance } = useBalance();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -99,7 +99,7 @@ const LeaveRequestsPage = () => {
     };
 
     fetchRequests();
-  }, [router, searchParams]);
+  }, [router, searchParams, currentUser?.role]);
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {
@@ -166,7 +166,7 @@ const LeaveRequestsPage = () => {
       // Refresh balance as deleting a request may affect leave balance
       try {
         await refreshBalance();
-      } catch (balanceError) {
+      } catch {
         // Don't fail the whole operation if balance refresh fails
       }
     } catch (err) {
@@ -320,7 +320,7 @@ const LeaveRequestsPage = () => {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
       <Header title={getPageTitle()} />
 
-      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+      <main role="main" className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8" aria-label="Leave requests management">
         <div className="px-4 py-6 sm:px-0">
           <div className="mb-6">
             <div className="flex items-center justify-between">
@@ -386,7 +386,7 @@ const LeaveRequestsPage = () => {
                 <div>
                   <select
                     value={statusFilter}
-                    onChange={(e) => setStatusFilter(e.target.value as any)}
+                    onChange={(e) => setStatusFilter(e.target.value as 'all' | 'pending' | 'approved' | 'rejected' | 'cancelled')}
                     className="px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                   >
                     <option value="all">All Status</option>

@@ -27,7 +27,7 @@ export default function NotAuthorizedPage() {
             Access Denied
           </h1>
           <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-            You don't have permission to access this page
+            You don&apos;t have permission to access this page
           </p>
         </div>
 
@@ -38,7 +38,7 @@ export default function NotAuthorizedPage() {
                 What happened?
               </h2>
               <p className="text-gray-600 dark:text-gray-400 text-sm">
-                The page you're trying to access requires specific permissions that your current role doesn't have.
+                The page you&apos;re trying to access requires specific permissions that your current role doesn&apos;t have.
               </p>
             </div>
 
@@ -60,7 +60,7 @@ export default function NotAuthorizedPage() {
               <ul className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
                 <li>• Contact your administrator to request access</li>
                 <li>• Return to the dashboard</li>
-                <li>• Check if you're logged in with the correct account</li>
+                <li>• Check if you&apos;re logged in with the correct account</li>
               </ul>
             </div>
           </div>

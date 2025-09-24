@@ -42,7 +42,7 @@ class CompanySettingsService {
       if (stored) {
         this.settings = { ...this.settings, ...JSON.parse(stored) };
       }
-    } catch (error) {
+    } catch {
       // Failed to load settings from localStorage
     }
   }
@@ -55,7 +55,7 @@ class CompanySettingsService {
       }
       
       localStorage.setItem('companySettings', JSON.stringify(this.settings));
-    } catch (error) {
+    } catch {
       // Failed to save settings to localStorage
     }
   }

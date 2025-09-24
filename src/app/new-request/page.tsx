@@ -47,14 +47,14 @@ export default function NewLeaveRequest() {
       try {
         const types = await apiService.getLeaveTypes();
         setLeaveTypes(types);
-      } catch (error) {
+      } catch {
         showError('Loading Failed', 'Failed to load leave types');
       }
     };
 
     checkAuth();
     fetchLeaveTypes();
-  }, [router]);
+  }, [router, showError]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -94,8 +94,12 @@ export default function NewLeaveRequest() {
       setTimeout(() => {
         router.push('/requests');
       }, 2000);
-    } catch (error: any) {
-      const errorMessage = error.response?.data?.message || 'Failed to create leave request';
+    } catch (error: unknown) {
+      let errorMessage = 'Failed to create leave request';
+      if (error && typeof error === 'object' && 'response' in error) {
+        const apiError = error as { response?: { data?: { message?: string } } };
+        errorMessage = apiError.response?.data?.message || errorMessage;
+      }
       showError('Submission Failed', errorMessage);
     } finally {
       setIsSubmitting(false);

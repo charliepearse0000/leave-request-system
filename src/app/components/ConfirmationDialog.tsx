@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { ExclamationTriangleIcon, InformationCircleIcon, ExclamationCircleIcon } from '@heroicons/react/24/outline';
+import { useFocusTrap } from '../utils/focus-trap';
 
 interface ConfirmationDialogProps {
   isOpen: boolean;
@@ -33,6 +34,13 @@ const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
   commentsPlaceholder = 'Add your comments...'
 }) => {
   const [comments, setComments] = useState('');
+  
+  const modalRef = useRef<HTMLDivElement>(null);
+  useFocusTrap(modalRef, isOpen, {
+    initialFocus: showComments ? 'textarea' : 'button[type="button"]:last-child',
+    escapeDeactivates: true,
+    onDeactivate: onClose,
+  });
   
   if (!isOpen) {
     return null;
@@ -93,9 +101,13 @@ const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
   
   return (
     <div 
+      ref={modalRef}
       className="fixed inset-0 z-[9999] overflow-y-auto transition-opacity duration-300"
       style={{ backgroundColor: 'rgba(0, 0, 0, 0.25)' }}
       onClick={handleClose}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="dialog-title"
     >
       <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center">
         <div 
@@ -107,7 +119,7 @@ const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
               <IconComponent className={`h-6 w-6 ${styles.icon}`} aria-hidden="true" />
             </div>
             <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left flex-1">
-              <h3 className="text-lg leading-6 font-semibold text-gray-900 dark:text-white mb-2">
+              <h3 id="dialog-title" className="text-lg leading-6 font-semibold text-gray-900 dark:text-white mb-2">
                 {title}
               </h3>
               <div className="mt-2">
@@ -128,9 +140,6 @@ const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
                 onChange={(e) => setComments(e.target.value)}
                 rows={3}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-gray-800 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition-colors duration-200"
-                style={{
-                  focusRingColor: variant === 'success' ? '#10b981' : variant === 'danger' ? '#ef4444' : '#6366f1'
-                }}
                 placeholder={commentsPlaceholder}
               />
             </div>

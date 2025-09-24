@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { CheckCircleIcon, XCircleIcon, ClockIcon, MinusCircleIcon } from '@heroicons/react/24/outline';
-import { apiService, type LeaveRequest, type ApiError } from '../services/api';
+import { apiService, type LeaveRequest } from '../services/api';
 import ConfirmationDialog from '../components/ConfirmationDialog';
 import Header from '../components/Header';
 import Card from '../components/Card';
@@ -17,7 +17,6 @@ const ApproveRequestsContent = () => {
   const [requests, setRequests] = useState<LeaveRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [currentUser, setCurrentUser] = useState<any>(null);
   const [sortField, setSortField] = useState<SortField>('submittedAt');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   const [searchTerm, setSearchTerm] = useState('');
@@ -57,7 +56,7 @@ const ApproveRequestsContent = () => {
 
 
 
-  const fetchRequests = async (user: any) => {
+  const fetchRequests = async (user: {id: string; role: string | {name: string}}) => {
     try {
       setLoading(true);
       setError(null);
@@ -88,15 +87,16 @@ const ApproveRequestsContent = () => {
     }
   };
 
-  const handleApproveRequest = (request: LeaveRequest) => {
-    setRequestToApprove(request);
-    setShowApproveDialog(true);
-  };
+  // Remove unused functions and variables
+  // const handleApproveRequest = (request: LeaveRequest) => {
+  //   setRequestToApprove(request);
+  //   setShowApproveDialog(true);
+  // };
 
-  const handleRejectRequest = (request: LeaveRequest) => {
-    setRequestToReject(request);
-    setShowRejectDialog(true);
-  };
+  // const handleRejectRequest = (request: LeaveRequest) => {
+  //   setRequestToReject(request);
+  //   setShowRejectDialog(true);
+  // };
 
   const confirmApproveRequest = async (comments?: string) => {
     if (!requestToApprove) return;
@@ -115,7 +115,7 @@ const ApproveRequestsContent = () => {
       
       setShowApproveDialog(false);
       setRequestToApprove(null);
-    } catch (err) {
+    } catch {
       alert('Failed to approve request. Please try again.');
     }
   };
@@ -137,7 +137,7 @@ const ApproveRequestsContent = () => {
       
       setShowRejectDialog(false);
       setRequestToReject(null);
-    } catch (err) {
+    } catch {
       alert('Failed to reject request. Please try again.');
     }
   };
@@ -170,8 +170,8 @@ const ApproveRequestsContent = () => {
       return matchesSearch && matchesStatus;
     })
     .sort((a, b) => {
-      let aValue: any = a[sortField];
-      let bValue: any = b[sortField];
+      let aValue: string | number | Date = a[sortField];
+      let bValue: string | number | Date = b[sortField];
 
       // Handle nested properties
       if (sortField === 'user') {
@@ -208,18 +208,19 @@ const ApproveRequestsContent = () => {
     }
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'approved':
-        return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
-      case 'rejected':
-        return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
-      case 'cancelled':
-        return 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200';
-      default:
-        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
-    }
-  };
+  // Remove unused function
+  // const getStatusColor = (status: string) => {
+  //   switch (status) {
+  //     case 'approved':
+  //       return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
+  //     case 'rejected':
+  //       return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
+  //     case 'cancelled':
+  //       return 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200';
+  //     default:
+  //       return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
+  //   }
+  // };
 
   if (loading) {
     return (
@@ -253,7 +254,7 @@ const ApproveRequestsContent = () => {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
       <Header title="Approve Leave Requests" />
 
-      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+      <main role="main" className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8" aria-label="Approve leave requests page">
         <div className="px-4 py-6 sm:px-0">
 
           <div className="mb-6">
@@ -303,7 +304,7 @@ const ApproveRequestsContent = () => {
               <div>
                 <select
                   value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value as any)}
+                  onChange={(e) => setStatusFilter(e.target.value as 'all' | 'pending' | 'approved' | 'rejected' | 'cancelled')}
                   className="px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                 >
                   <option value="all">All Status</option>
