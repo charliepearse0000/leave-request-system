@@ -7,6 +7,7 @@ import { useBalance } from './contexts/BalanceContext';
 import { useToast } from './contexts/ToastContext';
 import Header from './components/Header';
 import Card from './components/Card';
+import { AdminOnly, ManagerOnly, AdminOrManager } from './components/RoleBasedAccess';
 import { companySettings } from './services/company-settings';
 
 
@@ -25,7 +26,7 @@ interface User {
 
 export default function Home() {
   const router = useRouter();
-  const [authState, setAuthState] = useState({ user: null, isAuthenticated: false });
+  const [authState, setAuthState] = useState<{ user: User | null; isAuthenticated: boolean }>({ user: null, isAuthenticated: false });
   const [isClient, setIsClient] = useState(false);
   
   useEffect(() => {
@@ -86,7 +87,7 @@ export default function Home() {
                   Dashboard
                 </h1>
                 <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                  Welcome back, {authState.user.firstName}! Manage your leave requests and view your balance.
+                  Welcome back, {authState.user?.firstName}! Manage your leave requests and view your balance.
                 </p>
               </div>
             </div>
@@ -223,12 +224,11 @@ export default function Home() {
               </Card.Content>
             </Card>
 
-            {(authState.user.role === 'manager' || authState.user.role === 'admin') && (
+            <AdminOrManager>
               <Card 
                 onClick={() => router.push('/approve-requests')}
                 variant="clickable"
                 borderColor="orange"
-                color="orange"
               >
                 <Card.Content>
                   <div className="flex items-center">
@@ -239,7 +239,7 @@ export default function Home() {
                     <div className="ml-4">
                       <Card.Title>Approve Requests</Card.Title>
                       <Card.Description>
-                        {authState.user.role === 'admin' 
+                        {authState.user?.role?.name === 'admin' 
                           ? 'Review and approve all company requests' 
                           : 'Review and approve team requests'
                         }
@@ -249,9 +249,9 @@ export default function Home() {
                   </div>
                 </Card.Content>
               </Card>
-            )}
+            </AdminOrManager>
 
-            {authState.user.role === 'admin' && (
+            <AdminOnly>
               <Card 
                 onClick={() => router.push('/edit-users')}
                 variant="clickable"
@@ -275,9 +275,9 @@ export default function Home() {
                   </div>
                 </Card.Content>
               </Card>
-            )}
+            </AdminOnly>
 
-            {authState.user.role === 'admin' && (
+            <AdminOnly>
               <Card 
                 onClick={() => router.push('/company-settings')}
                 variant="clickable"
@@ -302,7 +302,7 @@ export default function Home() {
                   </div>
                 </Card.Content>
               </Card>
-            )}
+            </AdminOnly>
 
           </div>
 

@@ -6,8 +6,9 @@ import { useToast } from '../contexts/ToastContext';
 import { companySettings, CompanySettings } from '../services/company-settings';
 import Header from '../components/Header';
 import Card from '../components/Card';
+import RouteGuard from '../components/RouteGuard';
 
-export default function CompanySettingsPage() {
+function CompanySettingsContent() {
   const [settings, setSettings] = useState<CompanySettings>(companySettings.getSettings());
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -15,24 +16,9 @@ export default function CompanySettingsPage() {
   const router = useRouter();
 
   useEffect(() => {
-    // Check if user is admin
-    const userData = localStorage.getItem('userData');
-    if (userData) {
-      const user = JSON.parse(userData);
-      // Handle both role formats: string (user.role) and object (user.role.name)
-      const userRole = typeof user.role === 'string' ? user.role : user.role?.name;
-      if (userRole !== 'admin') {
-        router.push('/');
-        return;
-      }
-    } else {
-      router.push('/');
-      return;
-    }
-
     // Load current settings
     setSettings(companySettings.getSettings());
-  }, [router]);
+  }, []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
@@ -200,5 +186,13 @@ export default function CompanySettingsPage() {
         </div>
       </main>
     </div>
+  );
+}
+
+export default function CompanySettingsPage() {
+  return (
+    <RouteGuard requiredRoles={['admin']}>
+      <CompanySettingsContent />
+    </RouteGuard>
   );
 }

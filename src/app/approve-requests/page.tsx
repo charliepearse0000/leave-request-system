@@ -7,11 +7,12 @@ import { apiService, type LeaveRequest, type ApiError } from '../services/api';
 import ConfirmationDialog from '../components/ConfirmationDialog';
 import Header from '../components/Header';
 import Card from '../components/Card';
+import RouteGuard from '../components/RouteGuard';
 
 type SortField = keyof LeaveRequest;
 type SortDirection = 'asc' | 'desc';
 
-const ApproveRequestsPage = () => {
+const ApproveRequestsContent = () => {
   const router = useRouter();
   const [requests, setRequests] = useState<LeaveRequest[]>([]);
   const [loading, setLoading] = useState(true);
@@ -43,29 +44,11 @@ const ApproveRequestsPage = () => {
 
 
   useEffect(() => {
-    const token = localStorage.getItem('authToken');
-    if (!token) {
-      router.push('/');
-      return;
-    }
-
     // Get current user data
     const userData = localStorage.getItem('userData');
     if (userData) {
       const user = JSON.parse(userData);
       setCurrentUser(user);
-      
-      // Check if user has permission to approve requests
-      // Handle both role formats: string (user.role) and object (user.role.name)
-      const userRole = typeof user.role === 'string' ? user.role : user.role?.name;
-      const isAdmin = userRole === 'admin';
-      const isManager = userRole === 'manager';
-      
-      if (!isAdmin && !isManager) {
-        router.push('/requests');
-        return;
-      }
-
       fetchRequests(user);
     }
   }, [router]);
@@ -296,7 +279,7 @@ const ApproveRequestsPage = () => {
           </div>
 
         {error && !error.includes('Unauthorized') && (
-          <Card variant="error" className="mb-6">
+          <Card variant="bordered" borderColor="red" className="mb-6">
             <Card.Content>
               <div className="text-red-800 dark:text-red-200">
                 Error: {error}
@@ -617,4 +600,10 @@ const ApproveRequestsPage = () => {
   );
 };
 
-export default ApproveRequestsPage;
+export default function ApproveRequestsPage() {
+  return (
+    <RouteGuard requiredRoles={['admin', 'manager']}>
+      <ApproveRequestsContent />
+    </RouteGuard>
+  );
+}

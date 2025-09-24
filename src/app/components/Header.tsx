@@ -83,8 +83,8 @@ export default function Header({
     }, 100);
   };
 
-  const isManager = currentUser?.role === 'manager';
-  const isAdmin = currentUser?.role === 'admin';
+  const isManager = currentUser?.role?.name === 'manager';
+  const isAdmin = currentUser?.role?.name === 'admin';
   const canSeeNavigation = isManager || isAdmin;
 
   return (

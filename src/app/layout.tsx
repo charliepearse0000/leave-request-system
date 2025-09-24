@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { BalanceProvider } from "./contexts/BalanceContext";
 import { ToastProvider } from "./contexts/ToastContext";
+import AuthEventListener from "./components/AuthEventListener";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -30,6 +31,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen bg-background text-foreground`}
       >
         <ToastProvider>
+          <AuthEventListener />
           <BalanceProvider>
             {children}
           </BalanceProvider>

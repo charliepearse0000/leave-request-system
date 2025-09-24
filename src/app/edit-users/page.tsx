@@ -10,6 +10,7 @@ import EditUserForm from '../components/EditUserForm';
 import AddStaffForm from '../components/AddStaffForm';
 import Card from '../components/Card';
 import ConfirmationDialog from '../components/ConfirmationDialog';
+import RouteGuard from '../components/RouteGuard';
 import { getRoleBadgeClasses, getRoleCardClasses, getRoleTextClasses } from '../utils/roleColors';
 
 interface Role {
@@ -18,7 +19,7 @@ interface Role {
   description: string;
 }
 
-export default function EditUsersPage() {
+function EditUsersContent() {
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [selectedUser, setSelectedUser] = useState<UserProfile | null>(null);
   const [showEditForm, setShowEditForm] = useState(false);
@@ -34,26 +35,13 @@ export default function EditUsersPage() {
   const router = useRouter();
 
   useEffect(() => {
-    const userData = localStorage.getItem('userData');
-    if (userData) {
-      const user = JSON.parse(userData);
-      const userRole = typeof user.role === 'string' ? user.role : user.role?.name;
-      if (userRole !== 'admin') {
-        router.push('/');
-        return;
-      }
-    } else {
-      router.push('/');
-      return;
-    }
-
     fetchUsers();
   }, [router]);
 
   const fetchUsers = async () => {
     try {
       setIsLoading(true);
-      const usersData = await apiService.makeAuthenticatedRequest<UserProfile[]>('/api/users');
+      const usersData = await apiService.getUsers();
       setUsers(usersData);
     } catch (error) {
       showError('Failed to load users');
@@ -513,5 +501,13 @@ export default function EditUsersPage() {
         variant="danger"
       />
     </div>
+  );
+}
+
+export default function EditUsersPage() {
+  return (
+    <RouteGuard requiredRoles={['admin']}>
+      <EditUsersContent />
+    </RouteGuard>
   );
 }

@@ -364,6 +364,16 @@ class ApiService {
 
     return this.makeAuthenticatedRequest<UserProfile>(`/api/users/${staffId}`);
   }
+
+  async deleteUser(userId: string): Promise<void> {
+    return this.makeAuthenticatedRequest<void>(`/api/users/${userId}`, {
+      method: 'DELETE'
+    });
+  }
+
+  async getUsers(): Promise<UserProfile[]> {
+    return this.makeAuthenticatedRequest<UserProfile[]>('/api/users');
+  }
 }
 
 // Export singleton instance
