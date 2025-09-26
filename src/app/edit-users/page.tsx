@@ -22,15 +22,15 @@ function EditUsersContent() {
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState('all');
   const [sortConfig, setSortConfig] = useState<{key: string, direction: 'asc' | 'desc'} | null>(null);
+  const [sortBy, setSortBy] = useState('name');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+  const [showFilterDropdown, setShowFilterDropdown] = useState(false);
+  const [showSortDropdown, setShowSortDropdown] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [userToDelete, setUserToDelete] = useState<UserProfile | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const { showError, showSuccess } = useToast();
   const router = useRouter();
-
-  useEffect(() => {
-    fetchUsers();
-  }, [fetchUsers]);
 
   const fetchUsers = useCallback(async () => {
     try {
@@ -43,6 +43,22 @@ function EditUsersContent() {
       setIsLoading(false);
     }
   }, [showError]);
+
+  useEffect(() => {
+    fetchUsers();
+  }, [fetchUsers]);
+
+  useEffect(() => {
+    const handleClickOutside = () => {
+      setShowFilterDropdown(false);
+      setShowSortDropdown(false);
+    };
+
+    if (showFilterDropdown || showSortDropdown) {
+      document.addEventListener('click', handleClickOutside);
+      return () => document.removeEventListener('click', handleClickOutside);
+    }
+  }, [showFilterDropdown, showSortDropdown]);
 
   const handleEditUser = (user: UserProfile) => {
     setSelectedUser(user);
@@ -108,89 +124,76 @@ function EditUsersContent() {
       return matchesSearch && matchesRole;
     })
     .sort((a, b) => {
-      if (sortConfig) {
-        let aValue: string | number;
-        let bValue: string | number;
-        
-        switch (sortConfig.key) {
-          case 'name':
-            aValue = `${a.firstName} ${a.lastName}`;
-            bValue = `${b.firstName} ${b.lastName}`;
-            break;
-          case 'email':
-            aValue = a.email;
-            bValue = b.email;
-            break;
-          case 'role':
-            aValue = a.role.name;
-            bValue = b.role.name;
-            break;
-          case 'annualLeaveBalance':
-            aValue = a.annualLeaveBalance;
-            bValue = b.annualLeaveBalance;
-            break;
-          case 'sickLeaveBalance':
-            aValue = a.sickLeaveBalance;
-            bValue = b.sickLeaveBalance;
-            break;
-          default:
-            return 0;
-        }
-        
-        if (aValue < bValue) {
-          return sortConfig.direction === 'asc' ? -1 : 1;
-        }
-        if (aValue > bValue) {
-          return sortConfig.direction === 'asc' ? 1 : -1;
-        }
-        return 0;
+      let aValue: string | number;
+      let bValue: string | number;
+      
+      switch (sortBy) {
+        case 'name':
+          aValue = `${a.firstName} ${a.lastName}`;
+          bValue = `${b.firstName} ${b.lastName}`;
+          break;
+        case 'email':
+          aValue = a.email;
+          bValue = b.email;
+          break;
+        case 'role':
+          aValue = a.role.name;
+          bValue = b.role.name;
+          break;
+        case 'annualLeave':
+          aValue = a.annualLeaveBalance;
+          bValue = b.annualLeaveBalance;
+          break;
+        case 'sickLeave':
+          aValue = a.sickLeaveBalance;
+          bValue = b.sickLeaveBalance;
+          break;
+        default:
+          return 0;
       }
       
-      const roleOrder = { 'employee': 0, 'manager': 1, 'admin': 2 };
-      const aOrder = roleOrder[a.role.name as keyof typeof roleOrder] ?? 3;
-      const bOrder = roleOrder[b.role.name as keyof typeof roleOrder] ?? 3;
-      
-      if (aOrder !== bOrder) {
-        return aOrder - bOrder;
+      if (aValue < bValue) {
+        return sortOrder === 'asc' ? -1 : 1;
       }
-      
-      return `${a.firstName} ${a.lastName}`.localeCompare(`${b.firstName} ${b.lastName}`);
+      if (aValue > bValue) {
+        return sortOrder === 'asc' ? 1 : -1;
+      }
+      return 0;
     });
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
       <Header title="Manage Users" />
 
-      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        <div className="px-4 py-6 sm:px-0">
-          <div className="mb-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-                  User Management
-                </h1>
-                <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                  Manage users, roles, information, and create new staff accounts
-                </p>
-              </div>
-              <button
-                onClick={() => router.push('/')}
-                className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600"
-              >
-                <svg className="-ml-1 mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                </svg>
-                Back to Dashboard
-              </button>
+      <main className="container mx-auto px-4 py-6 max-w-7xl">
+        <div className="space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
+                User Management
+              </h1>
+              <p className="mt-1 text-sm sm:text-base text-gray-600 dark:text-gray-400">
+                Manage users, roles, information, and create new staff accounts
+              </p>
             </div>
+            <button
+              onClick={() => router.push('/')}
+              className="inline-flex items-center justify-center px-4 py-2 min-h-[44px] border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600 transition-colors"
+            >
+              <svg className="-ml-1 mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+              </svg>
+              <span className="hidden sm:inline">Back to Dashboard</span>
+              <span className="sm:hidden">Back</span>
+            </button>
           </div>
 
-          <Card variant="default">
-              <div className="px-6 py-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+              <div className="p-4 sm:p-6">
               <div className="mb-6">
                 <button
                   onClick={() => setShowAddStaffForm(true)}
-                  className="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-md transition-all duration-200 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:bg-indigo-500 dark:hover:bg-indigo-600"
+                  className="inline-flex items-center justify-center px-4 py-2 min-h-[44px] bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg transition-all duration-200 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:bg-indigo-500 dark:hover:bg-indigo-600 w-full sm:w-auto"
                 >
                   <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
@@ -212,86 +215,273 @@ function EditUsersContent() {
                       placeholder="Search users by name, email, or role..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg leading-5 bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      onClick={(e) => e.stopPropagation()}
+                      className="block w-full pl-10 pr-3 py-3 min-h-[44px] border border-gray-300 rounded-lg leading-5 bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base"
                     />
                   </div>
-                  <div className="sm:w-48">
-                    <select
-                      value={roleFilter}
-                      onChange={(e) => setRoleFilter(e.target.value)}
-                      className="block w-full px-3 py-3 border border-gray-300 rounded-lg bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    >
-                      <option value="all">All Roles</option>
-                      <option value="employee">Employees</option>
-                      <option value="manager">Managers</option>
-                      <option value="admin">Admins</option>
-                    </select>
+                  <div className="flex gap-2">
+                    <div className="relative">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setShowFilterDropdown(!showFilterDropdown);
+                          setShowSortDropdown(false);
+                        }}
+                        className="px-3 py-2 h-11 border border-gray-300 rounded-lg bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 cursor-pointer flex items-center gap-2 hover:bg-gray-50 dark:hover:bg-gray-600 text-sm whitespace-nowrap"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                        </svg>
+                        <span>
+                          {roleFilter === 'all' ? 'All Roles' : 
+                           roleFilter === 'employee' ? 'Employees' :
+                           roleFilter === 'manager' ? 'Managers' : 'Admins'}
+                        </span>
+                      </button>
+                      {showFilterDropdown && (
+                        <div className="absolute top-12 left-0 w-48 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg z-10">
+                          <button
+                            onClick={() => {
+                              setRoleFilter('all');
+                              setShowFilterDropdown(false);
+                            }}
+                            className={`w-full text-left px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-600 text-sm flex items-center justify-between ${roleFilter === 'all' ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400' : ''}`}
+                          >
+                            All Roles
+                            {roleFilter === 'all' && (
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                              </svg>
+                            )}
+                          </button>
+                          <button
+                            onClick={() => {
+                              setRoleFilter('employee');
+                              setShowFilterDropdown(false);
+                            }}
+                            className={`w-full text-left px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-600 text-sm flex items-center justify-between ${roleFilter === 'employee' ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400' : ''}`}
+                          >
+                            Employees
+                            {roleFilter === 'employee' && (
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                              </svg>
+                            )}
+                          </button>
+                          <button
+                            onClick={() => {
+                              setRoleFilter('manager');
+                              setShowFilterDropdown(false);
+                            }}
+                            className={`w-full text-left px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-600 text-sm flex items-center justify-between ${roleFilter === 'manager' ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400' : ''}`}
+                          >
+                            Managers
+                            {roleFilter === 'manager' && (
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                              </svg>
+                            )}
+                          </button>
+                          <button
+                            onClick={() => {
+                              setRoleFilter('admin');
+                              setShowFilterDropdown(false);
+                            }}
+                            className={`w-full text-left px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-600 text-sm flex items-center justify-between ${roleFilter === 'admin' ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400' : ''}`}
+                          >
+                            Admins
+                            {roleFilter === 'admin' && (
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                              </svg>
+                            )}
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                    <div className="relative">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setShowSortDropdown(!showSortDropdown);
+                          setShowFilterDropdown(false);
+                        }}
+                        className="px-3 py-2 h-11 border border-gray-300 rounded-lg bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 cursor-pointer flex items-center gap-2 hover:bg-gray-50 dark:hover:bg-gray-600 text-sm whitespace-nowrap"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7h18M3 12h18M3 17h18" />
+                        </svg>
+                        <span>
+                          {sortBy === 'name' ? `Name (${sortOrder === 'asc' ? 'A-Z' : 'Z-A'})` :
+                           sortBy === 'email' ? `Email (${sortOrder === 'asc' ? 'A-Z' : 'Z-A'})` :
+                           sortBy === 'role' ? `Role (${sortOrder === 'asc' ? 'A-Z' : 'Z-A'})` :
+                           sortBy === 'annualLeave' ? `Annual Leave (${sortOrder === 'asc' ? 'Low-High' : 'High-Low'})` :
+                           `Sick Leave (${sortOrder === 'asc' ? 'Low-High' : 'High-Low'})`}
+                        </span>
+                      </button>
+                      {showSortDropdown && (
+                        <div className="absolute top-12 left-0 w-48 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg z-10">
+                          <button
+                            onClick={() => {
+                              setSortBy('name');
+                              setSortOrder('asc');
+                              setShowSortDropdown(false);
+                            }}
+                            className={`w-full text-left px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-600 text-sm flex items-center justify-between ${sortBy === 'name' && sortOrder === 'asc' ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400' : ''}`}
+                          >
+                            Name (A-Z)
+                            {sortBy === 'name' && sortOrder === 'asc' && (
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                              </svg>
+                            )}
+                          </button>
+                          <button
+                            onClick={() => {
+                              setSortBy('name');
+                              setSortOrder('desc');
+                              setShowSortDropdown(false);
+                            }}
+                            className={`w-full text-left px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-600 text-sm flex items-center justify-between ${sortBy === 'name' && sortOrder === 'desc' ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400' : ''}`}
+                          >
+                            Name (Z-A)
+                            {sortBy === 'name' && sortOrder === 'desc' && (
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                              </svg>
+                            )}
+                          </button>
+                          <button
+                            onClick={() => {
+                              setSortBy('email');
+                              setSortOrder('asc');
+                              setShowSortDropdown(false);
+                            }}
+                            className={`w-full text-left px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-600 text-sm flex items-center justify-between ${sortBy === 'email' && sortOrder === 'asc' ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400' : ''}`}
+                          >
+                            Email (A-Z)
+                            {sortBy === 'email' && sortOrder === 'asc' && (
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                              </svg>
+                            )}
+                          </button>
+                          <button
+                            onClick={() => {
+                              setSortBy('email');
+                              setSortOrder('desc');
+                              setShowSortDropdown(false);
+                            }}
+                            className={`w-full text-left px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-600 text-sm flex items-center justify-between ${sortBy === 'email' && sortOrder === 'desc' ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400' : ''}`}
+                          >
+                            Email (Z-A)
+                            {sortBy === 'email' && sortOrder === 'desc' && (
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                              </svg>
+                            )}
+                          </button>
+                          <button
+                            onClick={() => {
+                              setSortBy('role');
+                              setSortOrder('asc');
+                              setShowSortDropdown(false);
+                            }}
+                            className={`w-full text-left px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-600 text-sm flex items-center justify-between ${sortBy === 'role' && sortOrder === 'asc' ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400' : ''}`}
+                          >
+                            Role (A-Z)
+                            {sortBy === 'role' && sortOrder === 'asc' && (
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                              </svg>
+                            )}
+                          </button>
+                          <button
+                            onClick={() => {
+                              setSortBy('role');
+                              setSortOrder('desc');
+                              setShowSortDropdown(false);
+                            }}
+                            className={`w-full text-left px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-600 text-sm flex items-center justify-between ${sortBy === 'role' && sortOrder === 'desc' ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400' : ''}`}
+                          >
+                            Role (Z-A)
+                            {sortBy === 'role' && sortOrder === 'desc' && (
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                              </svg>
+                            )}
+                          </button>
+                          <button
+                            onClick={() => {
+                              setSortBy('annualLeave');
+                              setSortOrder('asc');
+                              setShowSortDropdown(false);
+                            }}
+                            className={`w-full text-left px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-600 text-sm flex items-center justify-between ${sortBy === 'annualLeave' && sortOrder === 'asc' ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400' : ''}`}
+                          >
+                            Annual Leave (Low-High)
+                            {sortBy === 'annualLeave' && sortOrder === 'asc' && (
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                              </svg>
+                            )}
+                          </button>
+                          <button
+                            onClick={() => {
+                              setSortBy('annualLeave');
+                              setSortOrder('desc');
+                              setShowSortDropdown(false);
+                            }}
+                            className={`w-full text-left px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-600 text-sm flex items-center justify-between ${sortBy === 'annualLeave' && sortOrder === 'desc' ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400' : ''}`}
+                          >
+                            Annual Leave (High-Low)
+                            {sortBy === 'annualLeave' && sortOrder === 'desc' && (
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                              </svg>
+                            )}
+                          </button>
+                          <button
+                            onClick={() => {
+                              setSortBy('sickLeave');
+                              setSortOrder('asc');
+                              setShowSortDropdown(false);
+                            }}
+                            className={`w-full text-left px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-600 text-sm flex items-center justify-between ${sortBy === 'sickLeave' && sortOrder === 'asc' ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400' : ''}`}
+                          >
+                            Sick Leave (Low-High)
+                            {sortBy === 'sickLeave' && sortOrder === 'asc' && (
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                              </svg>
+                            )}
+                          </button>
+                          <button
+                            onClick={() => {
+                              setSortBy('sickLeave');
+                              setSortOrder('desc');
+                              setShowSortDropdown(false);
+                            }}
+                            className={`w-full text-left px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-600 text-sm flex items-center justify-between ${sortBy === 'sickLeave' && sortOrder === 'desc' ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400' : ''}`}
+                          >
+                            Sick Leave (High-Low)
+                            {sortBy === 'sickLeave' && sortOrder === 'desc' && (
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                              </svg>
+                            )}
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
 
 
 
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-                <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h3 className="text-sm font-medium text-gray-800 dark:text-gray-200">Total Users</h3>
-                      <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{users.length}</p>
-                      <p className="text-sm text-gray-600 dark:text-gray-300">all users</p>
-                    </div>
-                    <div className="text-gray-500">
-                      <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                      </svg>
-                    </div>
-                  </div>
-                </div>
-                <div className={`${getRoleCardClasses('employee')} rounded-lg p-4 border`}>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h3 className={`text-sm font-medium ${getRoleTextClasses('employee')}`}>Employees</h3>
-                      <p className={`text-2xl font-bold ${getRoleTextClasses('employee')}`}>{users.filter(u => u.role.name === 'employee').length}</p>
-                      <p className={`text-sm ${getRoleTextClasses('employee')} opacity-75`}>total employees</p>
-                    </div>
-                    <div className={`${getRoleTextClasses('employee')} opacity-60`}>
-                      <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                      </svg>
-                    </div>
-                  </div>
-                </div>
-                <div className={`${getRoleCardClasses('manager')} rounded-lg p-4 border`}>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h3 className={`text-sm font-medium ${getRoleTextClasses('manager')}`}>Managers</h3>
-                      <p className={`text-2xl font-bold ${getRoleTextClasses('manager')}`}>{users.filter(u => u.role.name === 'manager').length}</p>
-                      <p className={`text-sm ${getRoleTextClasses('manager')} opacity-75`}>total managers</p>
-                    </div>
-                    <div className={`${getRoleTextClasses('manager')} opacity-60`}>
-                      <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                      </svg>
-                    </div>
-                  </div>
-                </div>
-                <div className={`${getRoleCardClasses('admin')} rounded-lg p-4 border`}>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h3 className={`text-sm font-medium ${getRoleTextClasses('admin')}`}>Admins</h3>
-                      <p className={`text-2xl font-bold ${getRoleTextClasses('admin')}`}>{users.filter(u => u.role.name === 'admin').length}</p>
-                      <p className={`text-sm ${getRoleTextClasses('admin')} opacity-75`}>total admins</p>
-                    </div>
-                    <div className={`${getRoleTextClasses('admin')} opacity-60`}>
-                      <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                    </div>
-                  </div>
-                </div>
-              </div>
 
-              <div className="overflow-x-auto">
+              <div className="overflow-hidden">
                 {isLoading ? (
                   <div className="flex justify-center py-12">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
@@ -301,7 +491,65 @@ function EditUsersContent() {
                     {searchTerm ? 'No users found matching your search.' : 'No users found.'}
                   </div>
                 ) : (
-                  <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-600">
+                  <>
+                    {/* Mobile Card Layout */}
+                    <div className="block lg:hidden space-y-4">
+                      {filteredUsers.map((user) => (
+                        <div key={user.id} className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 border border-gray-200 dark:border-gray-600">
+                          <div className="flex items-start justify-between mb-3">
+                            <div>
+                              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                                {user.firstName} {user.lastName}
+                              </h3>
+                              <p className="text-sm text-gray-600 dark:text-gray-400">{user.email}</p>
+                            </div>
+                            <span className={getRoleBadgeClasses(user.role.name)}>
+                              {user.role.name.charAt(0).toUpperCase() + user.role.name.slice(1)}
+                            </span>
+                          </div>
+                          
+                          <div className="grid grid-cols-2 gap-4 mb-4 text-sm">
+                            <div>
+                              <span className="text-gray-500 dark:text-gray-400">Annual Leave:</span>
+                              <p className="font-medium text-gray-900 dark:text-white">
+                                {user.annualLeaveBalance}/{companySettings.getDefaultAnnualLeaveAllowance()} days
+                              </p>
+                            </div>
+                            <div>
+                              <span className="text-gray-500 dark:text-gray-400">Sick Leave:</span>
+                              <p className="font-medium text-gray-900 dark:text-white">
+                                {user.sickLeaveBalance}/{companySettings.getDefaultSickLeaveAllowance()} days
+                              </p>
+                            </div>
+                          </div>
+                          
+                          <div className="flex flex-col sm:flex-row gap-2">
+                            <button
+                              onClick={() => handleEditUser(user)}
+                              className="flex-1 inline-flex items-center justify-center px-3 py-2 min-h-[44px] bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-all duration-200 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:bg-blue-500 dark:hover:bg-blue-600 dark:focus:ring-blue-400"
+                            >
+                              <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                              </svg>
+                              Edit
+                            </button>
+                            <button
+                              onClick={() => handleDeleteUser(user)}
+                              className="flex-1 inline-flex items-center justify-center px-3 py-2 min-h-[44px] bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition-all duration-200 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:bg-red-500 dark:hover:bg-red-600 dark:focus:ring-red-400"
+                            >
+                              <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1-1H8a1 1 0 00-1 1v3M4 7h16" />
+                              </svg>
+                              Delete
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Desktop Table Layout */}
+                    <div className="hidden lg:block overflow-x-auto">
+                      <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-600">
                     <thead className="bg-gray-50 dark:bg-gray-700">
                       <tr>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
@@ -458,10 +706,12 @@ function EditUsersContent() {
                       ))}
                     </tbody>
                   </table>
+                    </div>
+                  </>
                 )}
               </div>
               </div>
-          </Card>
+          </div>
         </div>
       </main>
 

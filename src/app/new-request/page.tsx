@@ -21,6 +21,13 @@ interface FormData {
   reason: string;
 }
 
+interface FormErrors {
+  leaveTypeId?: string;
+  startDate?: string;
+  endDate?: string;
+  reason?: string;
+}
+
 export default function NewLeaveRequest() {
   const [leaveTypes, setLeaveTypes] = useState<LeaveType[]>([]);
   const [formData, setFormData] = useState<FormData>({
@@ -29,8 +36,10 @@ export default function NewLeaveRequest() {
     endDate: '',
     reason: ''
   });
+  const [formErrors, setFormErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [isNavigating, setIsNavigating] = useState(false);
   const router = useRouter();
   const { showSuccess, showError } = useToast();
 
@@ -56,12 +65,47 @@ export default function NewLeaveRequest() {
     fetchLeaveTypes();
   }, [router, showError]);
 
+  const validateForm = (): boolean => {
+    const errors: FormErrors = {};
+
+    if (!formData.leaveTypeId) {
+      errors.leaveTypeId = 'Please select a leave type';
+    }
+
+    if (!formData.startDate) {
+      errors.startDate = 'Please select a start date';
+    }
+
+    if (!formData.endDate) {
+      errors.endDate = 'Please select an end date';
+    } else if (formData.startDate && new Date(formData.endDate) < new Date(formData.startDate)) {
+      errors.endDate = 'End date must be after start date';
+    }
+
+    if (!formData.reason.trim()) {
+      errors.reason = 'Please provide a reason for your leave';
+    } else if (formData.reason.trim().length < 10) {
+      errors.reason = 'Reason must be at least 10 characters long';
+    }
+
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
       [name]: value
     }));
+    
+    // Clear error for this field when user starts typing
+    if (formErrors[name as keyof FormErrors]) {
+      setFormErrors(prev => ({
+        ...prev,
+        [name]: undefined
+      }));
+    }
   };
 
   const calculateDuration = () => {
@@ -77,6 +121,11 @@ export default function NewLeaveRequest() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!validateForm()) {
+      return;
+    }
+    
     setIsSubmitting(true);
 
     try {
@@ -112,18 +161,22 @@ export default function NewLeaveRequest() {
 
   if (success) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center">
-        <div className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-lg text-center">
-          <div className="text-green-500 text-6xl mb-4">✓</div>
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center px-4">
+        <div className="bg-white dark:bg-gray-800 p-6 sm:p-8 rounded-lg shadow-lg text-center max-w-md w-full">
+          <div className="text-green-500 text-5xl sm:text-6xl mb-4">✓</div>
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-3 sm:mb-2">
             Request Submitted Successfully!
           </h2>
-          <p className="text-gray-600 dark:text-gray-400 mb-4">
+          <p className="text-gray-600 dark:text-gray-400 mb-4 text-sm sm:text-base">
             Your leave request has been submitted and is pending approval.
           </p>
-          <p className="text-sm text-gray-500 dark:text-gray-500">
-            Redirecting to your requests...
-          </p>
+          <div className="flex items-center justify-center space-x-2 text-sm text-gray-500 dark:text-gray-500">
+            <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <span>Redirecting to your requests...</span>
+          </div>
         </div>
       </div>
     );
@@ -136,48 +189,83 @@ export default function NewLeaveRequest() {
       <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div className="px-4 py-6 sm:px-0">
           <div className="mb-6">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">New Leave Request</h1>
-              <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                Submit a new leave request for approval
-              </p>
+              <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">New Leave Request</h1>
             </div>
             <button
-              onClick={() => router.push('/')}
-              className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600"
+              onClick={() => {
+                setIsNavigating(true);
+                router.push('/');
+              }}
+              disabled={isNavigating}
+              className="inline-flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600 min-h-[44px] w-full sm:w-auto disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <svg className="-ml-1 mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-              </svg>
-              Back to Dashboard
+              {isNavigating ? (
+                <>
+                  <svg className="animate-spin -ml-1 mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Loading...
+                </>
+              ) : (
+                <>
+                  <svg className="-ml-1 mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                  </svg>
+                  Back to Dashboard
+                </>
+              )}
             </button>
           </div>
           </div>
 
           <Card variant="default">
             <Card.Content>
-              <form onSubmit={handleSubmit} className="px-6 py-4 space-y-6">
+              <form onSubmit={handleSubmit} className="px-4 sm:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6">
 
               <div>
                 <label htmlFor="leaveTypeId" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Leave Type *
                 </label>
-                <select
-                  id="leaveTypeId"
-                  name="leaveTypeId"
-                  value={formData.leaveTypeId}
-                  onChange={handleInputChange}
-                  required
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-                >
-                  <option value="">Select leave type</option>
-                  {leaveTypes.map((type) => (
-                    <option key={type.id} value={type.id}>
-                      {type.name} ({type.category}) - Max {type.maxDays} days
+                <div className="relative">
+                  <select
+                    id="leaveTypeId"
+                    name="leaveTypeId"
+                    value={formData.leaveTypeId}
+                    onChange={handleInputChange}
+                    required
+                    disabled={leaveTypes.length === 0}
+                    className={`w-full px-3 py-3 sm:py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white min-h-[44px] text-base sm:text-sm ${
+                      formErrors.leaveTypeId 
+                        ? 'border-red-500 dark:border-red-400' 
+                        : 'border-gray-300 dark:border-gray-600'
+                    } ${leaveTypes.length === 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  >
+                    <option value="">
+                      {leaveTypes.length === 0 ? 'Loading leave types...' : 'Select leave type'}
                     </option>
-                  ))}
-                </select>
+                    {leaveTypes.map((type) => (
+                      <option key={type.id} value={type.id}>
+                        {type.name} ({type.category}) - Max {type.maxDays} days
+                      </option>
+                    ))}
+                  </select>
+                  {leaveTypes.length === 0 && (
+                    <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
+                    </div>
+                  )}
+                </div>
+                {formErrors.leaveTypeId && (
+                  <p className="mt-2 text-sm text-red-600 dark:text-red-400 flex items-center">
+                    <svg className="w-4 h-4 mr-1 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                    </svg>
+                    {formErrors.leaveTypeId}
+                  </p>
+                )}
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -193,8 +281,24 @@ export default function NewLeaveRequest() {
                     onChange={handleInputChange}
                     required
                     min={new Date().toISOString().split('T')[0]}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                    aria-describedby="startDate-hint"
+                    className={`w-full px-3 py-3 sm:py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white min-h-[44px] text-base sm:text-sm ${
+                      formErrors.startDate 
+                        ? 'border-red-500 dark:border-red-400' 
+                        : 'border-gray-300 dark:border-gray-600'
+                    }`}
                   />
+                  <p id="startDate-hint" className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                    Select the first day of your leave
+                  </p>
+                  {formErrors.startDate && (
+                    <p className="mt-2 text-sm text-red-600 dark:text-red-400 flex items-center">
+                      <svg className="w-4 h-4 mr-1 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                      </svg>
+                      {formErrors.startDate}
+                    </p>
+                  )}
                 </div>
 
                 <div>
@@ -209,16 +313,37 @@ export default function NewLeaveRequest() {
                     onChange={handleInputChange}
                     required
                     min={formData.startDate || new Date().toISOString().split('T')[0]}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                    aria-describedby="endDate-hint"
+                    className={`w-full px-3 py-3 sm:py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white min-h-[44px] text-base sm:text-sm ${
+                      formErrors.endDate 
+                        ? 'border-red-500 dark:border-red-400' 
+                        : 'border-gray-300 dark:border-gray-600'
+                    }`}
                   />
+                  <p id="endDate-hint" className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                    Select the last day of your leave
+                  </p>
+                  {formErrors.endDate && (
+                    <p className="mt-2 text-sm text-red-600 dark:text-red-400 flex items-center">
+                      <svg className="w-4 h-4 mr-1 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                      </svg>
+                      {formErrors.endDate}
+                    </p>
+                  )}
                 </div>
               </div>
 
               {formData.startDate && formData.endDate && (
-                <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-md p-3">
-                  <p className="text-sm text-blue-800 dark:text-blue-200">
-                    Duration: {calculateDuration()} day(s)
-                  </p>
+                <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-md p-3 sm:p-4">
+                  <div className="flex items-center justify-center sm:justify-start space-x-2">
+                    <svg className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
+                    </svg>
+                    <p className="text-sm sm:text-base font-medium text-blue-800 dark:text-blue-200">
+                      Duration: <span className="font-bold">{calculateDuration()} day{calculateDuration() !== 1 ? 's' : ''}</span>
+                    </p>
+                  </div>
                 </div>
               )}
 
@@ -232,24 +357,42 @@ export default function NewLeaveRequest() {
                   value={formData.reason}
                   onChange={handleInputChange}
                   required
-                  rows={4}
+                  rows={3}
                   placeholder="Please provide a reason for your leave request..."
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white resize-none"
+                  aria-describedby="reason-hint"
+                  className={`w-full px-3 py-3 sm:py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white resize-none text-base sm:text-sm min-h-[100px] sm:min-h-[80px] ${
+                    formErrors.reason 
+                      ? 'border-red-500 dark:border-red-400' 
+                      : 'border-gray-300 dark:border-gray-600'
+                  }`}
                 />
+                <div className="flex justify-between items-center mt-1">
+                  <p id="reason-hint" className="text-xs text-gray-500 dark:text-gray-400">
+                    Minimum 10 characters required
+                  </p>
+                  <p className={`text-xs ${
+                    formData.reason.length >= 10 
+                      ? 'text-green-600 dark:text-green-400' 
+                      : 'text-gray-500 dark:text-gray-400'
+                  }`}>
+                    {formData.reason.length}/10
+                  </p>
+                </div>
+                {formErrors.reason && (
+                  <p className="mt-2 text-sm text-red-600 dark:text-red-400 flex items-center">
+                    <svg className="w-4 h-4 mr-1 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                    </svg>
+                    {formErrors.reason}
+                  </p>
+                )}
               </div>
 
-              <div className="flex justify-end space-x-3 pt-4">
-                <button
-                  type="button"
-                  onClick={handleCancel}
-                  className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200"
-                >
-                  Cancel
-                </button>
+              <div className="flex flex-col sm:flex-row sm:justify-end gap-3 pt-6 sm:pt-4">
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+                  className="w-full sm:w-auto px-4 py-3 sm:py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 min-h-[44px] order-1 sm:order-2"
                 >
                   {isSubmitting ? (
                     <>
@@ -262,6 +405,13 @@ export default function NewLeaveRequest() {
                   ) : (
                     'Submit Request'
                   )}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleCancel}
+                  className="w-full sm:w-auto px-4 py-3 sm:py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200 min-h-[44px] order-2 sm:order-1"
+                >
+                  Cancel
                 </button>
               </div>
               </form>

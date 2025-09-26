@@ -101,8 +101,9 @@ export default function Header({
             )}
             
             <div className="flex items-center space-x-3">
-              <svg className="h-8 w-8 text-green-600" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M12 2C12 2 8 4 8 8C8 10 9 11 10 12C9 11 8 10 8 8C8 4 12 2 12 2ZM12 2C12 2 16 4 16 8C16 10 15 11 14 12C15 11 16 10 16 8C16 4 12 2 12 2ZM12 2C12 2 10 6 10 10C10 12 11 13 12 14C11 13 10 12 10 10C10 6 12 2 12 2ZM12 2C12 2 14 6 14 10C14 12 13 13 12 14C13 13 14 12 14 10C14 6 12 2 12 2ZM12 2C12 2 11 7 11 11C11 13 12 14 12 15C12 14 11 13 11 11C11 7 12 2 12 2ZM12 2C12 2 13 7 13 11C13 13 12 14 12 15C12 14 13 13 13 11C13 7 12 2 12 2ZM11.5 15V22H12.5V15C12.5 15 12 14.5 12 15C12 14.5 11.5 15 11.5 15Z"/>
+              <svg className="h-8 w-8" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true" style={{ color: 'var(--primary)' }}>
+                <path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/>
+                <circle cx="16" cy="12" r="2" fill="currentColor" opacity="0.7"/>
               </svg>
               <div>
                 <span className="text-xl font-semibold text-gray-900 dark:text-white">
@@ -119,48 +120,61 @@ export default function Header({
               <div className="relative dropdown-container">
                 <button
                   onClick={() => setDropdownOpen(!dropdownOpen)}
-                  className="flex items-center space-x-2 text-sm text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors duration-200"
+                  className="flex items-center space-x-0 sm:space-x-3 p-2 rounded-lg bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 hover:border-gray-300 dark:hover:border-gray-500 hover:shadow-md transition-all duration-200"
                   aria-expanded={dropdownOpen}
                   aria-haspopup="true"
                   aria-label={`User menu for ${currentUser.firstName} ${currentUser.lastName}`}
                 >
-                  <span>Welcome, {currentUser.firstName} {currentUser.lastName}</span>
-                  <svg className={`w-4 h-4 transition-transform duration-200 ${dropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
+                  <div className="flex items-center space-x-0 sm:space-x-3">
+                    {/* User Avatar */}
+                    <div className="w-8 h-8 rounded-full flex items-center justify-center text-white" style={{ backgroundColor: 'var(--primary)' }}>
+                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="12" cy="8" r="4" />
+                        <path d="M12 14c-4.42 0-8 2.69-8 6v2h16v-2c0-3.31-3.58-6-8-6z" />
+                      </svg>
+                    </div>
+                    {/* User name - hidden on mobile, shown on larger screens */}
+                    <span className="hidden sm:inline text-sm text-gray-700 dark:text-gray-300">
+                      {currentUser.firstName} {currentUser.lastName}
+                    </span>
+                    {/* Dropdown arrow */}
+                    <svg className={`w-4 h-4 sm:w-4 sm:h-4 transition-transform duration-200 text-gray-500 dark:text-gray-400 flex-shrink-0 ${dropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </div>
                 </button>
                 
                 {dropdownOpen && (
                   <div 
-                    className="absolute right-0 mt-2 w-80 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-50"
+                    className="absolute right-0 mt-2 w-72 sm:w-80 max-w-[calc(100vw-2rem)] bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 z-50"
                     role="menu"
                     aria-label="User account information and actions"
                   >
-                    <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
+                    <div className="px-3 sm:px-4 py-3 border-b border-gray-200 dark:border-gray-700">
                       <h3 className="text-sm font-medium text-gray-900 dark:text-white">
                         Account Information
                       </h3>
                     </div>
-                    <div className="px-4 py-3">
-                      <dl className="space-y-3">
+                    <div className="px-3 sm:px-4 py-3">
+                      <dl className="space-y-3 sm:space-y-3">
                         <div>
-                          <dt className="text-xs font-medium text-gray-500 dark:text-gray-400">
+                          <dt className="text-xs sm:text-xs font-medium text-gray-500 dark:text-gray-400">
                             Full Name
                           </dt>
-                          <dd className="mt-1 text-sm text-gray-900 dark:text-white">
+                          <dd className="mt-1 text-sm sm:text-sm text-gray-900 dark:text-white break-words">
                             {currentUser.firstName} {currentUser.lastName}
                           </dd>
                         </div>
                         <div>
-                          <dt className="text-xs font-medium text-gray-500 dark:text-gray-400">
+                          <dt className="text-xs sm:text-xs font-medium text-gray-500 dark:text-gray-400">
                             Email
                           </dt>
-                          <dd className="mt-1 text-sm text-gray-900 dark:text-white">
+                          <dd className="mt-1 text-sm sm:text-sm text-gray-900 dark:text-white break-all">
                             {currentUser.email}
                           </dd>
                         </div>
                         <div>
-                          <dt className="text-xs font-medium text-gray-500 dark:text-gray-400">
+                          <dt className="text-xs sm:text-xs font-medium text-gray-500 dark:text-gray-400">
                             Role
                           </dt>
                           <dd className="mt-1">
@@ -175,19 +189,19 @@ export default function Header({
                           </dd>
                         </div>
                         <div>
-                          <dt className="text-xs font-medium text-gray-500 dark:text-gray-400">
+                          <dt className="text-xs sm:text-xs font-medium text-gray-500 dark:text-gray-400">
                             User ID
                           </dt>
-                          <dd className="mt-1 text-sm text-gray-900 dark:text-white font-mono">
+                          <dd className="mt-1 text-xs sm:text-sm text-gray-900 dark:text-white font-mono break-all">
                             {currentUser.id}
                           </dd>
                         </div>
                       </dl>
                     </div>
-                    <div className="px-4 py-3 border-t border-gray-200 dark:border-gray-700">
+                    <div className="px-3 sm:px-4 py-3 border-t border-gray-200 dark:border-gray-700">
                       <button
                         onClick={handleLogout}
-                        className="w-full text-left text-sm text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 transition-colors duration-200"
+                        className="w-full text-right text-sm text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 transition-colors duration-200 py-2 px-1 rounded hover:bg-red-50 dark:hover:bg-red-900/20 min-h-[44px] flex items-center justify-end"
                         role="menuitem"
                         aria-label="Sign out of your account"
                       >

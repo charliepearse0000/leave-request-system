@@ -15,7 +15,6 @@ function CompanySettingsContent() {
   const router = useRouter();
 
   useEffect(() => {
-    // Load current settings
     setSettings(companySettings.getSettings());
   }, []);
 

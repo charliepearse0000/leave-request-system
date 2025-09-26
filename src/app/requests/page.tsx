@@ -323,23 +323,15 @@ const LeaveRequestsPage = () => {
       <main role="main" className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8" aria-label="Leave requests management">
         <div className="px-4 py-6 sm:px-0">
           <div className="mb-6">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div>
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+                <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
                   {getPageTitle()}
                 </h1>
-                <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                  {viewParam === 'approve' 
-                    ? 'Review and manage leave requests that require approval'
-                    : viewParam === 'all'
-                    ? 'View and manage all company leave requests'
-                    : 'View and manage your leave requests'
-                  }
-                </p>
               </div>
               <button
                 onClick={() => router.push('/')}
-                className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600"
+                className="inline-flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600 min-h-[44px] w-full sm:w-auto"
               >
                 <svg className="-ml-1 mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
@@ -373,6 +365,7 @@ const LeaveRequestsPage = () => {
             </div>
           )}
           <Card variant="default" className="mb-6">
+            <Card.Content>
               <div className="px-6 py-4 flex flex-col sm:flex-row gap-4">
                 <div className="flex-1">
                   <input
@@ -397,10 +390,12 @@ const LeaveRequestsPage = () => {
                   </select>
                 </div>
               </div>
+            </Card.Content>
           </Card>
 
           <Card variant="default">
-            <div className="overflow-x-auto">
+            <Card.Content>
+              <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-600">
                 <thead className="bg-gray-50 dark:bg-gray-700">
                   <tr>
@@ -581,7 +576,8 @@ const LeaveRequestsPage = () => {
                   ))}
                 </tbody>
               </table>
-            </div>
+              </div>
+            </Card.Content>
           </Card>
 
           {filteredAndSortedRequests.length === 0 && (

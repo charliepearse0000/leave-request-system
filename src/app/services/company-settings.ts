@@ -1,6 +1,3 @@
-// Company Settings Service
-// Manages company-wide configuration including default leave allowances
-
 export interface CompanySettings {
   defaultAnnualLeaveAllowance: number;
   defaultSickLeaveAllowance: number;
@@ -13,7 +10,6 @@ class CompanySettingsService {
   private settings: CompanySettings;
 
   private constructor() {
-    // Default company settings
     this.settings = {
       defaultAnnualLeaveAllowance: 25,
       defaultSickLeaveAllowance: 10,
@@ -21,7 +17,6 @@ class CompanySettingsService {
       allowCustomAllowances: true
     };
     
-    // Load from localStorage if available
     this.loadSettings();
   }
 
@@ -43,20 +38,17 @@ class CompanySettingsService {
         this.settings = { ...this.settings, ...JSON.parse(stored) };
       }
     } catch {
-      // Failed to load settings from localStorage
     }
   }
 
   private saveSettings(): void {
     try {
-      // Check if we're in a browser environment
       if (typeof window === 'undefined') {
         return;
       }
       
       localStorage.setItem('companySettings', JSON.stringify(this.settings));
     } catch {
-      // Failed to save settings to localStorage
     }
   }
 
@@ -89,6 +81,5 @@ class CompanySettingsService {
   }
 }
 
-// Export singleton instance
 export const companySettings = CompanySettingsService.getInstance();
 export default companySettings;

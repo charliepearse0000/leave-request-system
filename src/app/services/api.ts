@@ -397,6 +397,5 @@ class ApiService {
   }
 }
 
-// Export singleton instance
 export const apiService = new ApiService();
 export type { LoginRequest, LoginResponse, ApiError, LeaveRequest, UserProfile, LeaveType, CreateLeaveRequestData, TeamBalance, CreateStaffData };

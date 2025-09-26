@@ -57,7 +57,7 @@ const Card: React.FC<CardProps> & {
   borderColor,
   hover = true
 }) => {
-  const baseClasses = 'bg-white dark:bg-gray-800 overflow-hidden shadow-lg rounded-lg';
+  const baseClasses = 'bg-white dark:bg-gray-800 overflow-hidden shadow-lg rounded-lg h-full flex flex-col';
   
   const variantClasses = {
     default: '',
@@ -110,7 +110,7 @@ const CardHeader: React.FC<CardHeaderProps> = ({ children, className = '' }) => 
 
 const CardContent: React.FC<CardContentProps> = ({ children, className = '' }) => {
   return (
-    <div className={`px-6 py-4 ${className}`}>
+    <div className={`px-6 py-4 flex-1 flex flex-col justify-center ${className}`}>
       {children}
     </div>
   );

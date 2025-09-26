@@ -222,3 +222,152 @@ textarea:focus-visible {
     box-shadow: 0 0 0 4px rgb(96 165 250 / 0.25);
   }
 }
+
+/* ===== TABLE SYSTEM ===== */
+.table-responsive {
+  @apply hidden md:block overflow-x-auto;
+}
+
+.table-desktop {
+  @apply min-w-full divide-y divide-gray-200 dark:divide-gray-600;
+}
+
+.table-desktop-header {
+  @apply bg-gray-50 dark:bg-gray-700;
+}
+
+.table-desktop-th {
+  @apply px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider;
+}
+
+.table-desktop-body {
+  @apply bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-600;
+}
+
+.table-desktop-row {
+  @apply hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors;
+}
+
+.table-desktop-td {
+  @apply px-3 py-2 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300;
+}
+
+.table-sort-button {
+  @apply flex items-center space-x-1 hover:text-gray-700 dark:hover:text-gray-100 transition-colors;
+}
+
+/* Mobile Card Alternative for Tables */
+.table-mobile-cards {
+  @apply block md:hidden space-y-4;
+}
+
+.table-mobile-card {
+  @apply bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600 p-4 shadow-sm;
+}
+
+.table-mobile-card-header {
+  @apply flex justify-between items-start mb-3 pb-2 border-b border-gray-200 dark:border-gray-600;
+}
+
+.table-mobile-card-title {
+  @apply font-medium text-gray-900 dark:text-gray-100;
+}
+
+.table-mobile-card-status {
+  @apply inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium;
+}
+
+.table-mobile-card-content {
+  @apply space-y-2;
+}
+
+.table-mobile-card-row {
+  @apply flex justify-between items-center;
+}
+
+.table-mobile-card-label {
+  @apply text-sm font-medium text-gray-500 dark:text-gray-400;
+}
+
+.table-mobile-card-value {
+  @apply text-sm text-gray-900 dark:text-gray-100;
+}
+
+.table-mobile-card-actions {
+  @apply mt-3 pt-3 border-t border-gray-200 dark:border-gray-600 flex justify-end;
+}
+
+.btn-primary-responsive {
+  @apply inline-flex items-center justify-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md transition-all duration-200 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-blue-500 dark:hover:bg-blue-600 dark:focus:ring-blue-400;
+  @apply text-sm sm:text-base;
+  @apply px-3 py-1.5 sm:px-4 sm:py-2;
+}
+
+.btn-danger-responsive {
+  @apply inline-flex items-center justify-center px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded-md transition-all duration-200 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-red-500 dark:hover:bg-red-600 dark:focus:ring-red-400;
+  @apply text-sm sm:text-base;
+  @apply px-3 py-1.5 sm:px-4 sm:py-2;
+}
+
+/* Custom Glow Effects for Metrics Cards */
+.glow-blue {
+  box-shadow: 0 4px 20px rgba(59, 130, 246, 0.3), 0 0 0 1px rgba(59, 130, 246, 0.1);
+}
+
+.glow-blue:hover {
+  box-shadow: 0 8px 30px rgba(59, 130, 246, 0.4), 0 0 0 1px rgba(59, 130, 246, 0.2), 0 0 20px rgba(59, 130, 246, 0.3);
+}
+
+.glow-green {
+  box-shadow: 0 4px 20px rgba(34, 197, 94, 0.3), 0 0 0 1px rgba(34, 197, 94, 0.1);
+}
+
+.glow-green:hover {
+  box-shadow: 0 8px 30px rgba(34, 197, 94, 0.4), 0 0 0 1px rgba(34, 197, 94, 0.2), 0 0 20px rgba(34, 197, 94, 0.3);
+}
+
+.glow-blue-light {
+  box-shadow: 0 4px 20px rgba(96, 165, 250, 0.3), 0 0 0 1px rgba(96, 165, 250, 0.1);
+}
+
+.glow-blue-light:hover {
+  box-shadow: 0 8px 30px rgba(96, 165, 250, 0.4), 0 0 0 1px rgba(96, 165, 250, 0.2), 0 0 20px rgba(96, 165, 250, 0.3);
+}
+
+.glow-purple {
+  box-shadow: 0 4px 20px rgba(168, 85, 247, 0.3), 0 0 0 1px rgba(168, 85, 247, 0.1);
+}
+
+.glow-purple:hover {
+  box-shadow: 0 8px 30px rgba(168, 85, 247, 0.4), 0 0 0 1px rgba(168, 85, 247, 0.2), 0 0 20px rgba(168, 85, 247, 0.3);
+}
+
+.glow-gray {
+  box-shadow: 0 4px 20px rgba(107, 114, 128, 0.3), 0 0 0 1px rgba(107, 114, 128, 0.1);
+}
+
+.glow-gray:hover {
+  box-shadow: 0 8px 30px rgba(107, 114, 128, 0.4), 0 0 0 1px rgba(107, 114, 128, 0.2), 0 0 20px rgba(107, 114, 128, 0.3);
+}
+
+/* ===== REQUESTS PAGE SPECIFIC STYLES ===== */
+.card-responsive {
+  @apply bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6;
+  @apply transition-all duration-200 hover:shadow-md;
+}
+
+.spacing-element {
+  @apply mb-6;
+}
+
+.heading-tertiary {
+  @apply text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4;
+}
+
+.input-field-responsive {
+  @apply w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm;
+  @apply bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100;
+  @apply focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500;
+  @apply transition-all duration-200;
+  @apply text-sm sm:text-base;
+}

@@ -21,18 +21,7 @@ const ApproveRequestsContent = () => {
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'approved' | 'rejected' | 'cancelled'>('pending');
-  
-
-  
-
-  
-  // Individual comments state - remove these as they're now handled by ConfirmationDialog
-  // const [approveComments, setApproveComments] = useState('');
-  // const [rejectComments, setRejectComments] = useState('');
-  
-
-  
-
+  const [currentUser, setCurrentUser] = useState<{id: string; role: string | {name: string}} | null>(null);
   
   // Confirmation dialog states
   const [showApproveDialog, setShowApproveDialog] = useState(false);
@@ -43,7 +32,6 @@ const ApproveRequestsContent = () => {
 
 
   useEffect(() => {
-    // Get current user data
     const userData = localStorage.getItem('userData');
     if (userData) {
       const user = JSON.parse(userData);
@@ -63,8 +51,6 @@ const ApproveRequestsContent = () => {
       
       let requestsData: LeaveRequest[];
       
-      // Fetch appropriate requests based on user role
-      // Handle both role formats: string (user.role) and object (user.role.name)
       const userRole = typeof user.role === 'string' ? user.role : user.role?.name;
       
       if (userRole === 'admin') {
@@ -86,17 +72,6 @@ const ApproveRequestsContent = () => {
       setLoading(false);
     }
   };
-
-  // Remove unused functions and variables
-  // const handleApproveRequest = (request: LeaveRequest) => {
-  //   setRequestToApprove(request);
-  //   setShowApproveDialog(true);
-  // };
-
-  // const handleRejectRequest = (request: LeaveRequest) => {
-  //   setRequestToReject(request);
-  //   setShowRejectDialog(true);
-  // };
 
   const confirmApproveRequest = async (comments?: string) => {
     if (!requestToApprove) return;
@@ -170,8 +145,8 @@ const ApproveRequestsContent = () => {
       return matchesSearch && matchesStatus;
     })
     .sort((a, b) => {
-      let aValue: string | number | Date = a[sortField];
-      let bValue: string | number | Date = b[sortField];
+      let aValue: string | number | Date;
+      let bValue: string | number | Date;
 
       // Handle nested properties
       if (sortField === 'user') {
@@ -180,6 +155,22 @@ const ApproveRequestsContent = () => {
       } else if (sortField === 'leaveType') {
         aValue = a.leaveType.name;
         bValue = b.leaveType.name;
+      } else {
+        // For primitive fields, safely cast to the expected types
+        const rawAValue = a[sortField];
+        const rawBValue = b[sortField];
+        
+        if (typeof rawAValue === 'string' || typeof rawAValue === 'number') {
+          aValue = rawAValue;
+        } else {
+          aValue = String(rawAValue);
+        }
+        
+        if (typeof rawBValue === 'string' || typeof rawBValue === 'number') {
+          bValue = rawBValue;
+        } else {
+          bValue = String(rawBValue);
+        }
       }
 
       // Handle dates
@@ -207,20 +198,6 @@ const ApproveRequestsContent = () => {
         return <ClockIcon className="h-5 w-5 text-yellow-500" />;
     }
   };
-
-  // Remove unused function
-  // const getStatusColor = (status: string) => {
-  //   switch (status) {
-  //     case 'approved':
-  //       return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
-  //     case 'rejected':
-  //       return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
-  //     case 'cancelled':
-  //       return 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200';
-  //     default:
-  //       return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
-  //   }
-  // };
 
   if (loading) {
     return (
