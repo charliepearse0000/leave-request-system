@@ -99,6 +99,25 @@ npm run test:accessibility
 npm run test:contrast
 ```
 
+### Accessibility Audit Runner (Playwright + axe-core)
+- Audits run in a real browser context via Playwright to avoid any Jest-related hangs.
+- Use the provided npm scripts on Windows PowerShell:
+  - `npm run test:a11y:home`
+  - `npm run test:a11y:manager`
+  - `npm run test:a11y:admin`
+- Notes:
+  - Audits scan only the `main` element and fail on `serious`/`critical` issues.
+  - Axe rules limited to `wcag2a` and `wcag2aa`; `color-contrast` disabled to reduce noise.
+  - Dev server starts temporarily on a random port and is auto-stubbed for required API calls.
+
+### Component-level A11y (Jest + RTL + axe-core)
+- For component/integration tests (avoiding full pages), enable gated a11y checks:
+  - Windows PowerShell: `$env:RUN_A11Y='true'; npm run test:a11y:rtl:new-request` and `$env:RUN_A11Y='true'; npm run test:a11y:rtl:requests`
+  - Bash: `RUN_A11Y=true npm run test:a11y:rtl:new-request` and `RUN_A11Y=true npm run test:a11y:rtl:requests`
+- Notes:
+  - Tests fail on `serious`/`critical` violations.
+  - Keep page-level checks in Playwright to avoid RTL hangs.
+
 ### Manual Testing Checklist
 - [ ] Keyboard-only navigation
 - [ ] Screen reader testing (NVDA/JAWS)

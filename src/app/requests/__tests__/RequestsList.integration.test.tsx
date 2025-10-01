@@ -2,8 +2,9 @@ import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import RequestsListView from '@/app/requests/RequestsListView';
 import { apiService } from '@/app/services/api';
+const shouldRunA11Y = process.env.RUN_A11Y === 'true'
+const itOrSkip = shouldRunA11Y ? it : it.skip
 
-// Router mock
 const pushMock = jest.fn();
 jest.mock('next/navigation', () => {
   const stableSearchParams = { get: () => null };
@@ -13,12 +14,10 @@ jest.mock('next/navigation', () => {
   };
 });
 
-// BalanceContext mock
 jest.mock('@/app/contexts/BalanceContext', () => ({
   useBalance: () => ({ refreshBalance: jest.fn() }),
 }));
 
-// Lightweight mocks for heavy UI components
 jest.mock('@/app/components/Header', () => () => <div />);
 jest.mock('@/app/components/Card', () => ({
   __esModule: true,
@@ -80,4 +79,15 @@ describe('Requests List UI Integration', () => {
     const cancelButton = screen.getByRole('button', { name: /cancel/i });
     expect(cancelButton).toBeTruthy();
   });
+
+  itOrSkip('has no serious axe violations', async () => {
+    const mockRequests = [] as any
+    const { container } = render(<RequestsListView requests={mockRequests as any} />)
+    const violations = await runAxe(container as unknown as HTMLElement)
+    const serious = violations.filter(v => v.impact === 'serious' || v.impact === 'critical')
+    if (serious.length) {
+      throw new Error(formatViolations(serious))
+    }
+    expect(serious).toHaveLength(0)
+  })
 });

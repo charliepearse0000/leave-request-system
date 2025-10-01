@@ -2,14 +2,14 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import NewLeaveRequest from '@/app/new-request/page';
 import { apiService } from '@/app/services/api';
+const shouldRunA11Y = process.env.RUN_A11Y === 'true'
+const itOrSkip = shouldRunA11Y ? it : it.skip
 
-// Router mock
 const pushMock = jest.fn();
 jest.mock('next/navigation', () => ({
   useRouter: () => ({ push: pushMock }),
 }));
 
-// ToastContext mock
 jest.mock('@/app/contexts/ToastContext', () => ({
   useToast: () => ({
     showSuccess: jest.fn(),
@@ -37,25 +37,20 @@ describe('New Leave Request Form Integration', () => {
 
     render(<NewLeaveRequest />);
 
-    // Wait for leave types
     const select = await screen.findByLabelText('Leave Type *');
     await waitFor(() => expect(select).not.toBeDisabled());
     fireEvent.change(select, { target: { value: 'lt1' } });
 
-    // Fill dates
     const startDate = screen.getByLabelText('Start Date *');
     const endDate = screen.getByLabelText('End Date *');
     fireEvent.change(startDate, { target: { value: '2025-01-10' } });
     fireEvent.change(endDate, { target: { value: '2025-01-12' } });
 
-    // Provide reason
     const reason = screen.getByLabelText('Reason *');
     fireEvent.change(reason, { target: { value: 'Family event' } });
 
-    // Submit
     fireEvent.click(screen.getByRole('button', { name: /submit request/i }));
 
-    // Verify payload sent to API
     await waitFor(() => expect(createSpy).toHaveBeenCalled());
     expect(createSpy).toHaveBeenCalledWith({
       leaveTypeId: 'lt1',
@@ -65,9 +60,6 @@ describe('New Leave Request Form Integration', () => {
       duration: 3,
     });
 
-    // Redirect
-
-    // Fast-forward redirect timer
     jest.advanceTimersByTime(2000);
     jest.useRealTimers();
 
@@ -77,13 +69,21 @@ describe('New Leave Request Form Integration', () => {
   it('shows validation errors for invalid inputs', async () => {
     render(<NewLeaveRequest />);
 
-    // Attempt submit with empty required fields
     fireEvent.click(screen.getByRole('button', { name: /submit request/i }));
 
-    // Assert validation messages
     expect(await screen.findByText(/Please select a leave type/i)).toBeInTheDocument();
     expect(screen.getByText(/Please select a start date/i)).toBeInTheDocument();
     expect(screen.getByText(/Please select an end date/i)).toBeInTheDocument();
     expect(screen.getByText(/Please provide a reason for your leave/i)).toBeInTheDocument();
   });
+
+  itOrSkip('has no serious axe violations', async () => {
+    const { container } = render(<NewLeaveRequest />)
+    const violations = await runAxe(container as unknown as HTMLElement)
+    const serious = violations.filter(v => v.impact === 'serious' || v.impact === 'critical')
+    if (serious.length) {
+      throw new Error(formatViolations(serious))
+    }
+    expect(serious).toHaveLength(0)
+  })
 });
