@@ -73,7 +73,7 @@ const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
         return {
           icon: 'text-blue-600 dark:text-blue-400',
           iconBg: 'bg-blue-100 dark:bg-blue-900/20',
-          confirmButton: 'bg-blue-600 hover:bg-blue-700 focus:ring-blue-500 dark:bg-blue-600 dark:hover:bg-blue-700 text-white',
+          confirmButton: 'bg-blue-600 hover:bg-blue-700 focus:ring-blue-500 dark:bg-blue-500 dark:hover:bg-blue-600 dark:focus:ring-blue-400 text-white',
           IconComponent: InformationCircleIcon
         };
       default:
@@ -91,11 +91,11 @@ const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
 
   const handleConfirm = () => {
     onConfirm(showComments ? comments : undefined);
-    setComments(''); // Reset comments after confirm
+    setComments('');
   };
 
   const handleClose = () => {
-    setComments(''); // Reset comments on close
+    setComments('');
     onClose();
   };
   

@@ -119,7 +119,7 @@ const AddStaffForm: React.FC<AddStaffFormProps> = ({ isOpen, onStaffAdded, onCan
       showSuccess('Staff member added successfully!');
       onStaffAdded();
     } catch (error: unknown) {
-      // Handle specific error types
+      
       let errorMessage = 'Failed to add staff member';
       
       if (error instanceof Error && error.message) {
@@ -151,7 +151,7 @@ const AddStaffForm: React.FC<AddStaffFormProps> = ({ isOpen, onStaffAdded, onCan
       [name]: value
     }));
     
-    // Clear error when user starts typing
+    
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: '' }));
     }
@@ -384,7 +384,7 @@ const AddStaffForm: React.FC<AddStaffFormProps> = ({ isOpen, onStaffAdded, onCan
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="inline-flex items-center justify-center px-4 py-2 min-h-[44px] border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 hover:shadow-md dark:bg-blue-500 dark:hover:bg-blue-600 dark:focus:ring-blue-400"
               >
                 {isSubmitting ? 'Adding...' : 'Add Staff Member'}
               </button>
