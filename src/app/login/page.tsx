@@ -15,15 +15,15 @@ export default function LoginPage() {
         return;
       }
 
-      // Add a small delay to ensure proper initialization
+  
       await new Promise(resolve => setTimeout(resolve, 100));
       
-      // Check if user is already authenticated
+  
       const token = localStorage.getItem('authToken');
       const userData = localStorage.getItem('userData');
       
       if (token && userData) {
-        // User is already logged in, redirect to dashboard
+  
         router.push('/');
       } else {
         setIsChecking(false);
@@ -33,7 +33,7 @@ export default function LoginPage() {
     checkAuth();
   }, [router]);
 
-  // Show loading while checking authentication
+  
   if (isChecking) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center">

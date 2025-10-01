@@ -25,14 +25,14 @@ const Toast = ({ id, type, title, message, duration = 5000, onClose }: ToastProp
   }, [id, onClose]);
 
   useEffect(() => {
-    // Trigger entrance animation
+  
     const timer = setTimeout(() => setIsVisible(true), 100);
     return () => clearTimeout(timer);
   }, []);
 
   useEffect(() => {
     if (duration > 0) {
-      // Progress bar animation
+  
       const progressInterval = setInterval(() => {
         setProgress(prev => {
           const newProgress = prev - (100 / (duration / 100));

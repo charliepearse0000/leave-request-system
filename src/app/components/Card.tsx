@@ -162,7 +162,7 @@ const CardArrow: React.FC<CardArrowProps> = ({ className = '' }) => {
   );
 };
 
-// Attach sub-components
+
 Card.Header = CardHeader;
 Card.Content = CardContent;
 Card.Icon = CardIcon;

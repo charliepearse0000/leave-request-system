@@ -10,7 +10,7 @@ import {
 } from 'chart.js';
 import { Pie } from 'react-chartjs-2';
 
-// Register Chart.js components
+
 ChartJS.register(ArcElement, Tooltip, Legend);
 
 interface RoleDistributionChartProps {
@@ -28,9 +28,9 @@ export default function RoleDistributionChart({ employees, managers, admins }: R
       {
         data: [employees, managers, admins],
         backgroundColor: [
-          '#3B82F6', // Blue for employees
-          '#10B981', // Green for managers
-          '#8B5CF6', // Purple for admins
+  '#3B82F6', 
+  '#10B981', 
+  '#8B5CF6', 
         ],
         borderColor: [
           '#2563EB',
@@ -65,14 +65,14 @@ export default function RoleDistributionChart({ employees, managers, admins }: R
           font: {
             size: 12,
           },
-          color: '#374151', // Gray-700
+  color: '#374151', 
         },
       },
       tooltip: {
-        backgroundColor: '#1F2937', // Gray-800
-        titleColor: '#F9FAFB', // Gray-50
-        bodyColor: '#F9FAFB', // Gray-50
-        borderColor: '#4B5563', // Gray-600
+  backgroundColor: '#1F2937', 
+  titleColor: '#F9FAFB', 
+  bodyColor: '#F9FAFB', 
+  borderColor: '#4B5563', 
         borderWidth: 1,
         cornerRadius: 8,
         displayColors: true,
@@ -97,7 +97,7 @@ export default function RoleDistributionChart({ employees, managers, admins }: R
     },
   };
 
-  // Update chart colors for dark mode
+
   useEffect(() => {
     const updateChartColors = () => {
       if (chartRef.current) {
@@ -112,10 +112,10 @@ export default function RoleDistributionChart({ employees, managers, admins }: R
       }
     };
 
-    // Initial update
+
     updateChartColors();
 
-    // Listen for theme changes
+
     const observer = new MutationObserver(updateChartColors);
     observer.observe(document.documentElement, {
       attributes: true,

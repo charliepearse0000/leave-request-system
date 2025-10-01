@@ -49,13 +49,13 @@ export default function Header({
         try {
           setCurrentUser(JSON.parse(userData));
         } catch {
-          // Error parsing user data
+  
         }
       }
     }
   }, [user]);
 
-  // Close dropdown when clicking outside
+  
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as Element;
@@ -126,18 +126,18 @@ export default function Header({
                   aria-label={`User menu for ${currentUser.firstName} ${currentUser.lastName}`}
                 >
                   <div className="flex items-center space-x-0 sm:space-x-3">
-                    {/* User Avatar */}
+        
                     <div className="w-8 h-8 rounded-full flex items-center justify-center text-white" style={{ backgroundColor: 'var(--primary)' }}>
                       <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                         <circle cx="12" cy="8" r="4" />
                         <path d="M12 14c-4.42 0-8 2.69-8 6v2h16v-2c0-3.31-3.58-6-8-6z" />
                       </svg>
                     </div>
-                    {/* User name - hidden on mobile, shown on larger screens */}
+        
                     <span className="hidden sm:inline text-sm text-gray-700 dark:text-gray-300">
                       {currentUser.firstName} {currentUser.lastName}
                     </span>
-                    {/* Dropdown arrow */}
+        
                     <svg className={`w-4 h-4 sm:w-4 sm:h-4 transition-transform duration-200 text-gray-500 dark:text-gray-400 flex-shrink-0 ${dropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                     </svg>

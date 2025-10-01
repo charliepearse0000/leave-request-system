@@ -19,22 +19,22 @@ export default function RoleBasedAccess({
 }: RoleBasedAccessProps) {
   const { isAuthenticated, hasRole } = useAuth();
 
-  // If authentication is required but user is not authenticated
+  
   if (requireAuth && !isAuthenticated) {
     return <>{fallback}</>;
   }
 
-  // If user is not authenticated and auth is not required, show children
+  
   if (!requireAuth && !isAuthenticated) {
     return <>{children}</>;
   }
 
-  // Check denied roles first
+  
   if (deniedRoles.length > 0 && hasRole(deniedRoles)) {
     return <>{fallback}</>;
   }
 
-  // Check allowed roles
+  
   if (allowedRoles.length > 0 && !hasRole(allowedRoles)) {
     return <>{fallback}</>;
   }
@@ -42,7 +42,7 @@ export default function RoleBasedAccess({
   return <>{children}</>;
 }
 
-// Convenience components for common role checks
+  
 export function AdminOnly({ children, fallback = null }: { children: React.ReactNode; fallback?: React.ReactNode }) {
   return (
     <RoleBasedAccess allowedRoles={['admin']} fallback={fallback}>
