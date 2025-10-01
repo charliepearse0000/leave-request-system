@@ -34,20 +34,17 @@ const LeaveRequestsPage = () => {
 
 
   useEffect(() => {
-    // Check authentication
     const token = localStorage.getItem('authToken');
     if (!token) {
       router.push('/');
       return;
     }
 
-    // Get current user data
     const userData = localStorage.getItem('userData');
     if (userData) {
       const user = JSON.parse(userData);
       setCurrentUser(user);
       
-      // Check if this is admin view
       const viewParam = searchParams.get('view');
       const isAdmin = user.role === 'admin';
       const isManager = user.role === 'manager';
@@ -55,32 +52,25 @@ const LeaveRequestsPage = () => {
       setIsAdminView(shouldShowAdminView);
     }
 
-    // Fetch leave requests from API
     const fetchRequests = async () => {
       try {
         setLoading(true);
         setError(null);
         
-        // Determine which API endpoint to use
         const viewParam = searchParams.get('view');
         const isAdmin = currentUser?.role === 'admin';
         const isManager = currentUser?.role === 'manager';
         
         let data: LeaveRequest[];
         if (viewParam === 'approve' && (isAdmin || isManager)) {
-          // Approve view - get requests that need approval
           if (isAdmin) {
-            // Admin can see all company requests for approval
             data = await apiService.getAllCompanyLeaveRequests();
           } else {
-            // Manager sees their team's requests (using regular endpoint for now)
             data = await apiService.getLeaveRequests();
           }
         } else if (viewParam === 'all' && isAdmin) {
-          // Admin view - get all company requests
           data = await apiService.getAllCompanyLeaveRequests();
         } else {
-          // Regular view - get user's own requests
           data = await apiService.getLeaveRequests();
         }
         
@@ -89,7 +79,6 @@ const LeaveRequestsPage = () => {
         const apiError = err as ApiError;
         setError(apiError.message || 'Failed to fetch leave requests');
         
-        // If unauthorized, redirect to login
         if (apiError.status === 401) {
           localStorage.removeItem('authToken');
           router.push('/');
@@ -132,7 +121,6 @@ const LeaveRequestsPage = () => {
   const confirmDeleteRequest = async () => {
     if (!requestToDelete) return;
     
-    // Safety check - ensure we have current user data
     if (!currentUser) {
       alert('User data not available. Please refresh the page and try again.');
       return;
@@ -142,46 +130,35 @@ const LeaveRequestsPage = () => {
     setShowConfirmDialog(false);
     
     try {
-      // Check if user is admin to determine which API to call
       const isAdmin = currentUser?.role === 'admin';
       
       if (isAdmin) {
-        // Admin can delete (permanent removal)
         await apiService.deleteLeaveRequest(requestToDelete);
       } else {
-        // Regular users can only cancel
         await apiService.cancelLeaveRequest(requestToDelete);
       }
       
-      // Refresh the requests list using the same logic as initial fetch
       const viewParam = searchParams.get('view');
       const isManager = currentUser?.role === 'manager';
       
       let data: LeaveRequest[];
       if (viewParam === 'approve' && (isAdmin || isManager)) {
-        // Approve view - get requests that need approval
         if (isAdmin) {
-          // Admin can see all company requests for approval
           data = await apiService.getAllCompanyLeaveRequests();
         } else {
-          // Manager sees their team's requests (using regular endpoint for now)
           data = await apiService.getLeaveRequests();
         }
       } else if (viewParam === 'all' && isAdmin) {
-        // Admin view - get all company requests
         data = await apiService.getAllCompanyLeaveRequests();
       } else {
-        // Regular view - get user's own requests
         data = await apiService.getLeaveRequests();
       }
       
       setRequests(data);
       
-      // Refresh balance as deleting a request may affect leave balance
       try {
         await refreshBalance();
       } catch {
-        // Don't fail the whole operation if balance refresh fails
       }
     } catch (err) {
       const apiError = err as ApiError;
@@ -297,7 +274,6 @@ const LeaveRequestsPage = () => {
     );
   }
 
-  // Get current view and user info for display
   const viewParam = searchParams.get('view');
   const userData = localStorage.getItem('userData');
   const user = userData ? JSON.parse(userData) : null;
@@ -693,7 +669,6 @@ const LeaveRequestsPage = () => {
                    </div>
                  </div>
                  
-                 {/* Sort buttons section */}
                  <div className="flex flex-wrap gap-2">
                    <button
                      onClick={() => handleSort('leaveType')}
@@ -764,7 +739,6 @@ const LeaveRequestsPage = () => {
 
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
              <div className="px-4 sm:px-6 py-4 sm:py-6">
-               {/* Mobile Card Layout */}
               <div className="block lg:hidden space-y-4">
                 {filteredAndSortedRequests.map((request) => (
                   <div key={request.id} className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 border border-gray-200 dark:border-gray-600">
@@ -831,7 +805,6 @@ const LeaveRequestsPage = () => {
                 ))}
               </div>
 
-              {/* Desktop Table Layout */}
               <div className="hidden lg:block overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-600">
                 <thead className="bg-gray-50 dark:bg-gray-700">
