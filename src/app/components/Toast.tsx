@@ -109,8 +109,8 @@ const Toast = ({ id, type, title, message, duration = 5000, onClose }: ToastProp
     <div
       className={`
         transform transition-all duration-300 ease-in-out
-        ${isVisible && !isLeaving ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0'}
-        max-w-sm w-full ${getBackgroundColor()} border rounded-lg shadow-lg pointer-events-auto
+        ${isVisible && !isLeaving ? 'translate-y-0 opacity-100' : 'translate-y-2 opacity-0'}
+        w-full sm:max-w-sm ${getBackgroundColor()} border rounded-lg shadow-lg pointer-events-auto
       `}
     >
       <div className="p-4">

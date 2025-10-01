@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { apiService } from '../services/api';
+import { companySettings } from '../services/company-settings';
 import { useToast } from '../contexts/ToastContext';
 import Header from '../components/Header';
 import Card from '../components/Card';
@@ -55,7 +56,40 @@ export default function NewLeaveRequest() {
     const fetchLeaveTypes = async () => {
       try {
         const types = await apiService.getLeaveTypes();
-        setLeaveTypes(types);
+
+        // Normalize, deduplicate, and add fallbacks for missing fields
+        const normalized = (types || []).map((t) => {
+          const cat = (t.category || '').toLowerCase();
+          const fallbackMax =
+            typeof t.maxDays === 'number' && !Number.isNaN(t.maxDays)
+              ? t.maxDays
+              : cat === 'annual'
+                ? companySettings.getDefaultAnnualLeaveAllowance()
+                : cat === 'sick'
+                  ? companySettings.getDefaultSickLeaveAllowance()
+                  : 0;
+          return {
+            ...t,
+            category: cat || 'other',
+            maxDays: fallbackMax,
+          };
+        });
+
+        const deduped = normalized.filter((t, idx, arr) => {
+          const key = `${(t.name || '').toLowerCase()}::${t.category}`;
+          return idx === arr.findIndex((u) => `${(u.name || '').toLowerCase()}::${u.category}` === key);
+        });
+
+        // Sort for a consistent UX: Annual, Sick, then Others
+        const ordered = deduped.sort((a, b) => {
+          const order = (x: string) => (x === 'annual' ? 0 : x === 'sick' ? 1 : 2);
+          const oa = order(a.category);
+          const ob = order(b.category);
+          if (oa !== ob) return oa - ob;
+          return (a.name || '').localeCompare(b.name || '');
+        });
+
+        setLeaveTypes(ordered);
       } catch {
         showError('Loading Failed', 'Failed to load leave types');
       }
@@ -64,6 +98,12 @@ export default function NewLeaveRequest() {
     checkAuth();
     fetchLeaveTypes();
   }, [router, showError]);
+
+  const formatCategory = (cat?: string) => {
+    if (!cat) return 'Other';
+    const c = cat.toLowerCase();
+    return c.charAt(0).toUpperCase() + c.slice(1);
+  };
 
   const validateForm = (): boolean => {
     const errors: FormErrors = {};
@@ -245,7 +285,7 @@ export default function NewLeaveRequest() {
                     </option>
                     {leaveTypes.map((type) => (
                       <option key={type.id} value={type.id}>
-                        {type.name} ({type.category}) - Max {type.maxDays} days
+                        {type.name} ({formatCategory(type.category)}) - Max {type.maxDays} days
                       </option>
                     ))}
                   </select>
