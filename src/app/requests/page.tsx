@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { ClockIcon, CheckCircleIcon, XCircleIcon, MinusCircleIcon } from '@heroicons/react/24/outline';
+import { ClockIcon, CheckCircleIcon, XCircleIcon, MinusCircleIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import { apiService, type LeaveRequest, type ApiError } from '../services/api';
 import ConfirmationDialog from '../components/ConfirmationDialog';
 import { useBalance } from '../contexts/BalanceContext';
@@ -21,6 +21,8 @@ const LeaveRequestsPage = () => {
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'approved' | 'rejected' | 'cancelled'>('all');
+  const [showFilterDropdown, setShowFilterDropdown] = useState(false);
+  const [showSortDropdown, setShowSortDropdown] = useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [requestToDelete, setRequestToDelete] = useState<string | null>(null);
   const [isAdminView, setIsAdminView] = useState(false);
@@ -100,6 +102,18 @@ const LeaveRequestsPage = () => {
 
     fetchRequests();
   }, [router, searchParams, currentUser?.role]);
+
+  useEffect(() => {
+    const handleClickOutside = () => {
+      setShowFilterDropdown(false);
+      setShowSortDropdown(false);
+    };
+
+    if (showFilterDropdown || showSortDropdown) {
+      document.addEventListener('click', handleClickOutside);
+      return () => document.removeEventListener('click', handleClickOutside);
+    }
+  }, [showFilterDropdown, showSortDropdown]);
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {
@@ -316,12 +330,29 @@ const LeaveRequestsPage = () => {
 
   const viewIndicator = getViewIndicator();
 
+  const EmptyState = () => (
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 text-center">
+      <div className="px-4 sm:px-6 py-4 sm:py-6">
+        <p className="text-gray-500 dark:text-gray-400">No leave requests found matching your criteria.</p>
+      </div>
+    </div>
+  );
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
-      <Header title={getPageTitle()} />
+        <Header title={getPageTitle()} />
+        <ConfirmationDialog
+          isOpen={showConfirmDialog}
+          title="Cancel Leave Request"
+          message="Are you sure you want to cancel this leave request? This action cannot be undone and your request will be permanently cancelled."
+          confirmText="Yes, Cancel Request"
+          cancelText="No, Keep Request"
+          onConfirm={confirmDeleteRequest}
+          onClose={cancelDeleteRequest}
+          variant="danger"
+        />
 
       <main role="main" className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8" aria-label="Leave requests management">
-        <div className="px-4 py-6 sm:px-0">
           <div className="mb-6">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div>
@@ -364,38 +395,444 @@ const LeaveRequestsPage = () => {
               </div>
             </div>
           )}
-          <Card variant="default" className="mb-6">
-            <Card.Content>
-              <div className="px-6 py-4 flex flex-col sm:flex-row gap-4">
-                <div className="flex-1">
-                  <input
-                    type="text"
-                    placeholder="Search by leave type or reason..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                  />
-                </div>
-                <div>
-                  <select
-                    value={statusFilter}
-                    onChange={(e) => setStatusFilter(e.target.value as 'all' | 'pending' | 'approved' | 'rejected' | 'cancelled')}
-                    className="px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                  >
-                    <option value="all">All Status</option>
-                    <option value="pending">Pending</option>
-                    <option value="approved">Approved</option>
-                    <option value="rejected">Rejected</option>
-                    <option value="cancelled">Cancelled</option>
-                  </select>
-                </div>
-              </div>
-            </Card.Content>
-          </Card>
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 mb-6">
+            <div className="px-4 sm:px-6 py-4 sm:py-6">
+              <div className="mb-4 sm:mb-6 space-y-4">
+                <div className="flex flex-row gap-2 sm:gap-4">
+                  <div className="relative flex-1">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <input
+                      type="text"
+                      placeholder="Search by leave type or reason..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      onClick={(e) => e.stopPropagation()}
+                      className="block w-full pl-10 pr-4 py-3 sm:py-2 min-h-[44px] border border-gray-200 rounded-lg leading-5 bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base sm:text-sm shadow-sm"
+                    />
+                  </div>
+                  <div className="flex gap-2 sm:gap-2">
+                    <div className="relative">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setShowFilterDropdown(!showFilterDropdown);
+                          setShowSortDropdown(false);
+                        }}
+                        className={`px-4 py-3 sm:py-2 min-h-[44px] border rounded-lg bg-white dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 cursor-pointer flex items-center gap-2 text-base sm:text-sm whitespace-nowrap transition-colors ${
+                          statusFilter !== 'all' 
+                            ? 'border-blue-300 bg-blue-50 text-blue-700 hover:bg-blue-100 dark:border-blue-600 dark:bg-blue-900/20 dark:text-blue-400 dark:hover:bg-blue-900/30'
+                            : 'border-gray-200 text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:hover:bg-gray-600'
+                        }`}
+                      >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                    </svg>
+                    <span className="hidden sm:inline">
+                      {statusFilter === 'all' ? 'All Status' : 
+                       statusFilter === 'pending' ? 'Pending' :
+                       statusFilter === 'approved' ? 'Approved' :
+                       statusFilter === 'rejected' ? 'Rejected' : 'Cancelled'}
+                    </span>
+                  </button>
+                  {showFilterDropdown && (
+                    <div className="absolute top-12 left-0 w-48 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg z-50">
+                      <button
+                        onClick={() => {
+                          setStatusFilter('all');
+                          setShowFilterDropdown(false);
+                        }}
+                        className={`w-full text-left px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-600 text-sm flex items-center justify-between ${statusFilter === 'all' ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400' : ''}`}
+                      >
+                        All Status
+                        {statusFilter === 'all' && (
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                          </svg>
+                        )}
+                      </button>
+                      <button
+                        onClick={() => {
+                          setStatusFilter('pending');
+                          setShowFilterDropdown(false);
+                        }}
+                        className={`w-full text-left px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-600 text-sm flex items-center justify-between ${statusFilter === 'pending' ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400' : ''}`}
+                      >
+                        Pending
+                        {statusFilter === 'pending' && (
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                          </svg>
+                        )}
+                      </button>
+                      <button
+                        onClick={() => {
+                          setStatusFilter('approved');
+                          setShowFilterDropdown(false);
+                        }}
+                        className={`w-full text-left px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-600 text-sm flex items-center justify-between ${statusFilter === 'approved' ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400' : ''}`}
+                      >
+                        Approved
+                        {statusFilter === 'approved' && (
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                          </svg>
+                        )}
+                      </button>
+                      <button
+                        onClick={() => {
+                          setStatusFilter('rejected');
+                          setShowFilterDropdown(false);
+                        }}
+                        className={`w-full text-left px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-600 text-sm flex items-center justify-between ${statusFilter === 'rejected' ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400' : ''}`}
+                      >
+                        Rejected
+                        {statusFilter === 'rejected' && (
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                          </svg>
+                        )}
+                      </button>
+                      <button
+                        onClick={() => {
+                          setStatusFilter('cancelled');
+                          setShowFilterDropdown(false);
+                        }}
+                        className={`w-full text-left px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-600 text-sm flex items-center justify-between ${statusFilter === 'cancelled' ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400' : ''}`}
+                      >
+                        Cancelled
+                        {statusFilter === 'cancelled' && (
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                          </svg>
+                        )}
+                      </button>
+                    </div>
+                  )}
+                     </div>
+                     <div className="relative">
+                       <button
+                         onClick={(e) => {
+                           e.stopPropagation();
+                           setShowSortDropdown(!showSortDropdown);
+                           setShowFilterDropdown(false);
+                         }}
+                         className={`px-4 py-3 sm:py-2 min-h-[44px] border rounded-lg bg-white dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 cursor-pointer flex items-center gap-2 text-base sm:text-sm whitespace-nowrap transition-colors ${
+                           sortField !== 'submittedAt' || sortDirection !== 'desc'
+                             ? 'border-blue-300 bg-blue-50 text-blue-700 hover:bg-blue-100 dark:border-blue-600 dark:bg-blue-900/20 dark:text-blue-400 dark:hover:bg-blue-900/30'
+                             : 'border-gray-200 text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:hover:bg-gray-600'
+                         }`}
+                       >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7h18M3 12h18M3 17h18" />
+                    </svg>
+                    <span className="hidden sm:inline">
+                      {sortField === 'leaveType' ? `Leave Type (${sortDirection === 'asc' ? 'A-Z' : 'Z-A'})` :
+                       sortField === 'startDate' ? `Start Date (${sortDirection === 'asc' ? 'Old-New' : 'New-Old'})` :
+                       sortField === 'endDate' ? `End Date (${sortDirection === 'asc' ? 'Old-New' : 'New-Old'})` :
+                       sortField === 'submittedAt' ? `Submitted (${sortDirection === 'asc' ? 'Old-New' : 'New-Old'})` :
+                       `Status (${sortDirection === 'asc' ? 'A-Z' : 'Z-A'})`}
+                    </span>
+                  </button>
+                  {showSortDropdown && (
+                    <div className="absolute top-12 left-0 w-48 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg z-50">
+                      <button
+                        onClick={() => {
+                          setSortField('leaveType');
+                          setSortDirection('asc');
+                          setShowSortDropdown(false);
+                        }}
+                        className={`w-full text-left px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-600 text-sm flex items-center justify-between ${sortField === 'leaveType' && sortDirection === 'asc' ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400' : ''}`}
+                      >
+                        Leave Type (A-Z)
+                        {sortField === 'leaveType' && sortDirection === 'asc' && (
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                          </svg>
+                        )}
+                      </button>
+                      <button
+                        onClick={() => {
+                          setSortField('leaveType');
+                          setSortDirection('desc');
+                          setShowSortDropdown(false);
+                        }}
+                        className={`w-full text-left px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-600 text-sm flex items-center justify-between ${sortField === 'leaveType' && sortDirection === 'desc' ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400' : ''}`}
+                      >
+                        Leave Type (Z-A)
+                        {sortField === 'leaveType' && sortDirection === 'desc' && (
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                          </svg>
+                        )}
+                      </button>
+                      <button
+                        onClick={() => {
+                          setSortField('startDate');
+                          setSortDirection('asc');
+                          setShowSortDropdown(false);
+                        }}
+                        className={`w-full text-left px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-600 text-sm flex items-center justify-between ${sortField === 'startDate' && sortDirection === 'asc' ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400' : ''}`}
+                      >
+                        Start Date (Old-New)
+                        {sortField === 'startDate' && sortDirection === 'asc' && (
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                          </svg>
+                        )}
+                      </button>
+                      <button
+                        onClick={() => {
+                          setSortField('startDate');
+                          setSortDirection('desc');
+                          setShowSortDropdown(false);
+                        }}
+                        className={`w-full text-left px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-600 text-sm flex items-center justify-between ${sortField === 'startDate' && sortDirection === 'desc' ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400' : ''}`}
+                      >
+                        Start Date (New-Old)
+                        {sortField === 'startDate' && sortDirection === 'desc' && (
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                          </svg>
+                        )}
+                      </button>
+                      <button
+                        onClick={() => {
+                          setSortField('endDate');
+                          setSortDirection('asc');
+                          setShowSortDropdown(false);
+                        }}
+                        className={`w-full text-left px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-600 text-sm flex items-center justify-between ${sortField === 'endDate' && sortDirection === 'asc' ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400' : ''}`}
+                      >
+                        End Date (Old-New)
+                        {sortField === 'endDate' && sortDirection === 'asc' && (
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                          </svg>
+                        )}
+                      </button>
+                      <button
+                        onClick={() => {
+                          setSortField('endDate');
+                          setSortDirection('desc');
+                          setShowSortDropdown(false);
+                        }}
+                        className={`w-full text-left px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-600 text-sm flex items-center justify-between ${sortField === 'endDate' && sortDirection === 'desc' ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400' : ''}`}
+                      >
+                        End Date (New-Old)
+                        {sortField === 'endDate' && sortDirection === 'desc' && (
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                          </svg>
+                        )}
+                      </button>
+                      <button
+                        onClick={() => {
+                          setSortField('submittedAt');
+                          setSortDirection('asc');
+                          setShowSortDropdown(false);
+                        }}
+                        className={`w-full text-left px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-600 text-sm flex items-center justify-between ${sortField === 'submittedAt' && sortDirection === 'asc' ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400' : ''}`}
+                      >
+                        Submitted (Old-New)
+                        {sortField === 'submittedAt' && sortDirection === 'asc' && (
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                          </svg>
+                        )}
+                      </button>
+                      <button
+                        onClick={() => {
+                          setSortField('submittedAt');
+                          setSortDirection('desc');
+                          setShowSortDropdown(false);
+                        }}
+                        className={`w-full text-left px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-600 text-sm flex items-center justify-between ${sortField === 'submittedAt' && sortDirection === 'desc' ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400' : ''}`}
+                      >
+                        Submitted (New-Old)
+                        {sortField === 'submittedAt' && sortDirection === 'desc' && (
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                          </svg>
+                        )}
+                      </button>
+                      <button
+                        onClick={() => {
+                          setSortField('status');
+                          setSortDirection('asc');
+                          setShowSortDropdown(false);
+                        }}
+                        className={`w-full text-left px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-600 text-sm flex items-center justify-between ${sortField === 'status' && sortDirection === 'asc' ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400' : ''}`}
+                      >
+                        Status (A-Z)
+                        {sortField === 'status' && sortDirection === 'asc' && (
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                          </svg>
+                        )}
+                      </button>
+                      <button
+                        onClick={() => {
+                          setSortField('status');
+                          setSortDirection('desc');
+                          setShowSortDropdown(false);
+                        }}
+                        className={`w-full text-left px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-600 text-sm flex items-center justify-between ${sortField === 'status' && sortDirection === 'desc' ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400' : ''}`}
+                      >
+                        Status (Z-A)
+                        {sortField === 'status' && sortDirection === 'desc' && (
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                          </svg>
+                        )}
+                      </button>
+                    </div>
+                  )}
+                     </div>
+                   </div>
+                 </div>
+                 
+                 {/* Sort buttons section */}
+                 <div className="flex flex-wrap gap-2">
+                   <button
+                     onClick={() => handleSort('leaveType')}
+                     className={`px-3 py-2 text-sm rounded-lg border transition-colors flex items-center gap-2 ${
+                       sortField === 'leaveType'
+                         ? 'bg-blue-50 border-blue-200 text-blue-700 dark:bg-blue-900/20 dark:border-blue-600 dark:text-blue-400'
+                         : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-600'
+                     }`}
+                   >
+                     Leave Type
+                     {sortField === 'leaveType' && (
+                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                       </svg>
+                     )}
+                   </button>
+                   
+                   <button
+                     onClick={() => handleSort('startDate')}
+                     className={`px-3 py-2 text-sm rounded-lg border transition-colors flex items-center gap-2 ${
+                       sortField === 'startDate'
+                         ? 'bg-blue-50 border-blue-200 text-blue-700 dark:bg-blue-900/20 dark:border-blue-600 dark:text-blue-400'
+                         : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-600'
+                     }`}
+                   >
+                     Start Date
+                     {sortField === 'startDate' && (
+                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                       </svg>
+                     )}
+                   </button>
+                   
+                   <button
+                     onClick={() => handleSort('status')}
+                     className={`px-3 py-2 text-sm rounded-lg border transition-colors flex items-center gap-2 ${
+                       sortField === 'status'
+                         ? 'bg-blue-50 border-blue-200 text-blue-700 dark:bg-blue-900/20 dark:border-blue-600 dark:text-blue-400'
+                         : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-600'
+                     }`}
+                   >
+                     Status
+                     {sortField === 'status' && (
+                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                       </svg>
+                     )}
+                   </button>
+                   
+                   <button
+                     onClick={() => handleSort('submittedAt')}
+                     className={`px-3 py-2 text-sm rounded-lg border transition-colors flex items-center gap-2 ${
+                       sortField === 'submittedAt'
+                         ? 'bg-blue-50 border-blue-200 text-blue-700 dark:bg-blue-900/20 dark:border-blue-600 dark:text-blue-400'
+                         : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-600'
+                     }`}
+                   >
+                     Submitted
+                     {sortField === 'submittedAt' && (
+                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                       </svg>
+                     )}
+                   </button>
+                 </div>
+               </div>
+             </div>
 
-          <Card variant="default">
-            <Card.Content>
-              <div className="overflow-x-auto">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+             <div className="px-4 sm:px-6 py-4 sm:py-6">
+               {/* Mobile Card Layout */}
+              <div className="block lg:hidden space-y-4">
+                {filteredAndSortedRequests.map((request) => (
+                  <div key={request.id} className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 border border-gray-200 dark:border-gray-600">
+                    <div className="flex items-start justify-between mb-3">
+                      <div>
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                          {request.leaveType?.name || 'Unknown'}
+                        </h3>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                          {new Date(request.startDate).toLocaleDateString()} - {new Date(request.endDate).toLocaleDateString()}
+                        </p>
+                      </div>
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${getStatusColor(request.status)}`}>
+                        {getStatusIcon(request.status)}
+                        <span className="ml-1 capitalize">{request.status}</span>
+                      </span>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-4 mb-4 text-sm">
+                      <div>
+                        <span className="text-gray-500 dark:text-gray-400">Duration:</span>
+                        <p className="font-medium text-gray-900 dark:text-white">
+                          {request.duration} {request.duration === 1 ? 'day' : 'days'}
+                        </p>
+                      </div>
+                      <div>
+                        <span className="text-gray-500 dark:text-gray-400">Submitted:</span>
+                        <p className="font-medium text-gray-900 dark:text-white">
+                          {new Date(request.submittedAt).toLocaleDateString()}
+                        </p>
+                      </div>
+                    </div>
+                    
+                    {request.reason && (
+                      <div className="mb-4">
+                        <span className="text-gray-500 dark:text-gray-400 text-sm">Reason:</span>
+                        <p className="text-sm text-gray-900 dark:text-white mt-1">
+                          {request.reason}
+                        </p>
+                      </div>
+                    )}
+                    
+                    {!isAdminView && request.status === 'pending' && (
+                      <div className="flex flex-col sm:flex-row gap-2">
+                        <button
+                          onClick={() => handleCancelRequest(request.id)}
+                          disabled={cancellingIds.has(request.id)}
+                          className="flex-1 inline-flex items-center justify-center px-3 py-2 min-h-[44px] bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition-all duration-200 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-red-500 dark:hover:bg-red-600 dark:focus:ring-red-400"
+                        >
+                          {cancellingIds.has(request.id) ? (
+                            <span className="animate-spin h-4 w-4 mr-1.5 border-2 border-white border-t-transparent rounded-full"></span>
+                          ) : (
+                            <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                          )}
+                          {cancellingIds.has(request.id) 
+                            ? 'Cancelling...' 
+                            : 'Cancel Request'}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              {/* Desktop Table Layout */}
+              <div className="hidden lg:block overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-600">
                 <thead className="bg-gray-50 dark:bg-gray-700">
                   <tr>
@@ -556,7 +993,7 @@ const LeaveRequestsPage = () => {
                             <button
                               onClick={() => handleCancelRequest(request.id)}
                               disabled={cancellingIds.has(request.id)}
-                              className="inline-flex items-center px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-md transition-all duration-200 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-red-500 dark:hover:bg-red-600 dark:focus:ring-red-400"
+                              className="inline-flex items-center px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition-all duration-200 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-red-500 dark:hover:bg-red-600 dark:focus:ring-red-400"
                             >
                               {cancellingIds.has(request.id) ? (
                                 <span className="animate-spin h-4 w-4 mr-1.5 border-2 border-white border-t-transparent rounded-full"></span>
@@ -577,29 +1014,12 @@ const LeaveRequestsPage = () => {
                 </tbody>
               </table>
               </div>
-            </Card.Content>
-          </Card>
+            </div>
+          </div>
 
-          {filteredAndSortedRequests.length === 0 && (
-            <Card variant="default" className="text-center">
-              <Card.Content className="p-6">
-                <p className="text-gray-500">No leave requests found matching your criteria.</p>
-              </Card.Content>
-            </Card>
-          )}
+          {filteredAndSortedRequests.length === 0 && <EmptyState />}
         </div>
       </main>
-      
-      <ConfirmationDialog
-        isOpen={showConfirmDialog}
-        title="Cancel Leave Request"
-        message="Are you sure you want to cancel this leave request? This action cannot be undone and your request will be permanently cancelled."
-        confirmText="Yes, Cancel Request"
-        cancelText="No, Keep Request"
-        onConfirm={confirmDeleteRequest}
-        onClose={cancelDeleteRequest}
-        variant="danger"
-      />
     </div>
   );
 };
