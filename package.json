@@ -18,6 +18,8 @@
     "test:a11y:rtl:new-request": "cross-env RUN_A11Y=true jest --runInBand src/app/new-request/__tests__/",
     "test:a11y:rtl:requests": "cross-env RUN_A11Y=true jest --runInBand src/app/requests/__tests__/",
     "test:a11y:rtl:components": "npm run test:a11y:rtl:new-request && npm run test:a11y:rtl:requests"
+    ,
+    "test:frontend:all": "npm test && npm run test:a11y:rtl:components && npm run test:a11y:home && npm run test:a11y:manager && npm run test:a11y:admin"
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",
