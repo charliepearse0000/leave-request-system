@@ -58,7 +58,7 @@ export const ToastProvider = ({ children }: ToastProviderProps) => {
       type: 'error',
       title,
       message,
-      duration: 7000, // Longer duration for errors
+      duration: 7000,
     });
   };
 
