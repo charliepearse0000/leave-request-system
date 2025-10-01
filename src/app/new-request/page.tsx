@@ -84,8 +84,6 @@ export default function NewLeaveRequest() {
 
     if (!formData.reason.trim()) {
       errors.reason = 'Please provide a reason for your leave';
-    } else if (formData.reason.trim().length < 10) {
-      errors.reason = 'Reason must be at least 10 characters long';
     }
 
     setFormErrors(errors);
@@ -99,7 +97,7 @@ export default function NewLeaveRequest() {
       [name]: value
     }));
     
-    // Clear error for this field when user starts typing
+    
     if (formErrors[name as keyof FormErrors]) {
       setFormErrors(prev => ({
         ...prev,
@@ -139,7 +137,7 @@ export default function NewLeaveRequest() {
       showSuccess('Request Submitted', 'Your leave request has been submitted successfully.');
       setSuccess(true);
       
-      // Redirect to requests page after successful submission
+    
       setTimeout(() => {
         router.push('/requests');
       }, 2000);
@@ -171,7 +169,7 @@ export default function NewLeaveRequest() {
             Your leave request has been submitted and is pending approval.
           </p>
           <div className="flex items-center justify-center space-x-2 text-sm text-gray-500 dark:text-gray-500">
-            <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
@@ -203,7 +201,7 @@ export default function NewLeaveRequest() {
             >
               {isNavigating ? (
                 <>
-                  <svg className="animate-spin -ml-1 mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <svg className="animate-spin -ml-1 mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
@@ -366,16 +364,9 @@ export default function NewLeaveRequest() {
                       : 'border-gray-300 dark:border-gray-600'
                   }`}
                 />
-                <div className="flex justify-between items-center mt-1">
+                <div className="mt-1">
                   <p id="reason-hint" className="text-xs text-gray-500 dark:text-gray-400">
-                    Minimum 10 characters required
-                  </p>
-                  <p className={`text-xs ${
-                    formData.reason.length >= 10 
-                      ? 'text-green-600 dark:text-green-400' 
-                      : 'text-gray-500 dark:text-gray-400'
-                  }`}>
-                    {formData.reason.length}/10
+                    Please provide a brief explanation for your leave request
                   </p>
                 </div>
                 {formErrors.reason && (
@@ -388,15 +379,15 @@ export default function NewLeaveRequest() {
                 )}
               </div>
 
-              <div className="flex flex-col sm:flex-row sm:justify-end gap-3 pt-6 sm:pt-4">
+              <div className="flex flex-col sm:flex-row gap-2 pt-6 sm:pt-4">
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full sm:w-auto px-4 py-3 sm:py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 min-h-[44px] order-1 sm:order-2"
+                  className="flex-1 inline-flex items-center justify-center px-4 py-2 min-h-[44px] bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-all duration-200 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:bg-blue-500 dark:hover:bg-blue-600 dark:focus:ring-blue-400 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isSubmitting ? (
                     <>
-                      <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                        </svg>
@@ -409,7 +400,7 @@ export default function NewLeaveRequest() {
                 <button
                   type="button"
                   onClick={handleCancel}
-                  className="w-full sm:w-auto px-4 py-3 sm:py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200 min-h-[44px] order-2 sm:order-1"
+                  className="flex-1 inline-flex items-center justify-center px-4 py-2 min-h-[44px] bg-gray-600 hover:bg-gray-700 text-white text-sm font-medium rounded-lg transition-all duration-200 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 dark:bg-gray-500 dark:hover:bg-gray-600 dark:focus:ring-gray-400"
                 >
                   Cancel
                 </button>

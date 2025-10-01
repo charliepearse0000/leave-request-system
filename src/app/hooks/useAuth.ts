@@ -34,7 +34,7 @@ export const useAuth = () => {
       isLoading: false,
     });
     
-    // Dispatch custom event for token expiry notifications
+  
     if (reason === 'expired') {
       window.dispatchEvent(new CustomEvent('auth:tokenExpired', {
         detail: { message: 'Your session has expired. Please log in again.' }
@@ -58,12 +58,12 @@ export const useAuth = () => {
         return;
       }
 
-      // Check if token is expired
+  
       const tokenPayload = JSON.parse(atob(token.split('.')[1]));
       const currentTime = Date.now() / 1000;
       
       if (tokenPayload.exp < currentTime) {
-        // Token is expired
+  
         logout('expired');
         return;
       }
@@ -74,8 +74,7 @@ export const useAuth = () => {
         isAuthenticated: true,
         isLoading: false,
       });
-    } catch (error) {
-      console.error('Auth check failed:', error);
+    } catch {
       logout();
     }
   }, [logout]);
@@ -84,7 +83,7 @@ export const useAuth = () => {
     checkAuth();
   }, [checkAuth]);
 
-  // Periodic token expiry check
+  
   useEffect(() => {
     if (!authState.isAuthenticated) return;
 
@@ -105,7 +104,7 @@ export const useAuth = () => {
       } catch {
         logout('expired');
       }
-    }, 60000); // Check every minute
+  }, 60000);
 
     return () => clearInterval(interval);
   }, [authState.isAuthenticated, logout]);

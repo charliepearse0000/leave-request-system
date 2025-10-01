@@ -2,16 +2,16 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import { useToast } from '../contexts/ToastContext';
 import { apiService, UserProfile } from '../services/api';
 import { companySettings } from '../services/company-settings';
 import Header from '../components/Header';
 import EditUserForm from '../components/EditUserForm';
 import AddStaffForm from '../components/AddStaffForm';
-import Card from '../components/Card';
 import ConfirmationDialog from '../components/ConfirmationDialog';
 import RouteGuard from '../components/RouteGuard';
-import { getRoleBadgeClasses, getRoleCardClasses, getRoleTextClasses } from '../utils/roleColors';
+import { getRoleBadgeClasses } from '../utils/roleColors';
 
 function EditUsersContent() {
   const [users, setUsers] = useState<UserProfile[]>([]);
@@ -29,6 +29,7 @@ function EditUsersContent() {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [userToDelete, setUserToDelete] = useState<UserProfile | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isNavigating, setIsNavigating] = useState(false);
   const { showError, showSuccess } = useToast();
   const router = useRouter();
 
@@ -162,38 +163,51 @@ function EditUsersContent() {
     });
 
   return (
+    <>
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
-      <Header title="Manage Users" />
+      <Header title="User Management" />
 
-      <main className="container mx-auto px-4 py-6 max-w-7xl">
-        <div className="space-y-6">
+      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        <div className="px-4 py-6 sm:px-0">
+        <div className="space-y-4 sm:space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
-                User Management
-              </h1>
-              <p className="mt-1 text-sm sm:text-base text-gray-600 dark:text-gray-400">
-                Manage users, roles, information, and create new staff accounts
-              </p>
+              <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">Manage Users</h1>
             </div>
             <button
-              onClick={() => router.push('/')}
-              className="inline-flex items-center justify-center px-4 py-2 min-h-[44px] border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600 transition-colors"
+              onClick={() => {
+                setIsNavigating(true);
+                router.push('/');
+              }}
+              disabled={isNavigating}
+              className="inline-flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600 min-h-[44px] w-full sm:w-auto disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <svg className="-ml-1 mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-              </svg>
-              <span className="hidden sm:inline">Back to Dashboard</span>
-              <span className="sm:hidden">Back</span>
+              {isNavigating ? (
+                <>
+                  <svg className="animate-spin -ml-1 mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  <span className="hidden sm:inline">Navigating...</span>
+                  <span className="sm:hidden">Loading...</span>
+                </>
+              ) : (
+                <>
+                  <svg className="-ml-1 mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                  </svg>
+                  Back to Dashboard
+                </>
+              )}
             </button>
           </div>
 
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-              <div className="p-4 sm:p-6">
-              <div className="mb-6">
+              <div className="px-4 sm:px-6 py-4 sm:py-6">
+              <div className="mb-4 sm:mb-6">
                 <button
                   onClick={() => setShowAddStaffForm(true)}
-                  className="inline-flex items-center justify-center px-4 py-2 min-h-[44px] bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg transition-all duration-200 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:bg-indigo-500 dark:hover:bg-indigo-600 w-full sm:w-auto"
+                  className="inline-flex items-center justify-center px-4 py-2 min-h-[44px] bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-all duration-200 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:bg-blue-500 dark:hover:bg-blue-600 dark:focus:ring-blue-400 w-full sm:w-auto"
                 >
                   <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
@@ -202,13 +216,11 @@ function EditUsersContent() {
                 </button>
               </div>
 
-              <div className="mb-6 space-y-4">
-                <div className="flex flex-col sm:flex-row gap-4">
+              <div className="mb-4 sm:mb-6 space-y-4">
+                <div className="flex flex-row gap-2 sm:gap-4">
                   <div className="relative flex-1">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                      </svg>
+                      <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" />
                     </div>
                     <input
                       type="text"
@@ -216,10 +228,10 @@ function EditUsersContent() {
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
                       onClick={(e) => e.stopPropagation()}
-                      className="block w-full pl-10 pr-3 py-3 min-h-[44px] border border-gray-300 rounded-lg leading-5 bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base"
+                      className="block w-full pl-10 pr-4 py-3 sm:py-2 min-h-[44px] border border-gray-200 rounded-lg leading-5 bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base sm:text-sm shadow-sm"
                     />
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 sm:gap-2">
                     <div className="relative">
                       <button
                         onClick={(e) => {
@@ -227,19 +239,23 @@ function EditUsersContent() {
                           setShowFilterDropdown(!showFilterDropdown);
                           setShowSortDropdown(false);
                         }}
-                        className="px-3 py-2 h-11 border border-gray-300 rounded-lg bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 cursor-pointer flex items-center gap-2 hover:bg-gray-50 dark:hover:bg-gray-600 text-sm whitespace-nowrap"
+                        className={`px-4 py-3 sm:py-2 min-h-[44px] border rounded-lg bg-white dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 cursor-pointer flex items-center gap-2 text-base sm:text-sm whitespace-nowrap transition-colors ${
+                          roleFilter !== 'all' 
+                            ? 'border-blue-300 bg-blue-50 text-blue-700 hover:bg-blue-100 dark:border-blue-600 dark:bg-blue-900/20 dark:text-blue-400 dark:hover:bg-blue-900/30'
+                            : 'border-gray-200 text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:hover:bg-gray-600'
+                        }`}
                       >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
                         </svg>
-                        <span>
+                        <span className="hidden sm:inline">
                           {roleFilter === 'all' ? 'All Roles' : 
                            roleFilter === 'employee' ? 'Employees' :
                            roleFilter === 'manager' ? 'Managers' : 'Admins'}
                         </span>
                       </button>
                       {showFilterDropdown && (
-                        <div className="absolute top-12 left-0 w-48 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg z-10">
+                        <div className="absolute top-12 left-0 w-48 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg z-50">
                           <button
                             onClick={() => {
                               setRoleFilter('all');
@@ -306,12 +322,12 @@ function EditUsersContent() {
                           setShowSortDropdown(!showSortDropdown);
                           setShowFilterDropdown(false);
                         }}
-                        className="px-3 py-2 h-11 border border-gray-300 rounded-lg bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 cursor-pointer flex items-center gap-2 hover:bg-gray-50 dark:hover:bg-gray-600 text-sm whitespace-nowrap"
+                        className="px-4 py-3 sm:py-2 min-h-[44px] border border-gray-300 rounded-lg bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 cursor-pointer flex items-center gap-2 hover:bg-gray-50 dark:hover:bg-gray-600 text-base sm:text-sm whitespace-nowrap shadow-sm transition-colors duration-200"
                       >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7h18M3 12h18M3 17h18" />
                         </svg>
-                        <span>
+                        <span className="hidden sm:inline">
                           {sortBy === 'name' ? `Name (${sortOrder === 'asc' ? 'A-Z' : 'Z-A'})` :
                            sortBy === 'email' ? `Email (${sortOrder === 'asc' ? 'A-Z' : 'Z-A'})` :
                            sortBy === 'role' ? `Role (${sortOrder === 'asc' ? 'A-Z' : 'Z-A'})` :
@@ -320,7 +336,7 @@ function EditUsersContent() {
                         </span>
                       </button>
                       {showSortDropdown && (
-                        <div className="absolute top-12 left-0 w-48 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg z-10">
+                        <div className="absolute top-12 left-0 w-48 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg z-50">
                           <button
                             onClick={() => {
                               setSortBy('name');
@@ -492,23 +508,23 @@ function EditUsersContent() {
                   </div>
                 ) : (
                   <>
-                    {/* Mobile Card Layout */}
-                    <div className="block lg:hidden space-y-4">
+              
+                    <div className="block lg:hidden space-y-4 sm:space-y-3">
                       {filteredUsers.map((user) => (
-                        <div key={user.id} className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 border border-gray-200 dark:border-gray-600">
-                          <div className="flex items-start justify-between mb-3">
+                        <div key={user.id} className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 sm:p-3 border border-gray-200 dark:border-gray-600">
+                          <div className="flex items-start justify-between mb-3 sm:mb-2">
                             <div>
-                              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                              <h3 className="text-lg sm:text-base font-semibold text-gray-900 dark:text-white">
                                 {user.firstName} {user.lastName}
                               </h3>
-                              <p className="text-sm text-gray-600 dark:text-gray-400">{user.email}</p>
+                              <p className="text-sm sm:text-xs text-gray-600 dark:text-gray-400">{user.email}</p>
                             </div>
                             <span className={getRoleBadgeClasses(user.role.name)}>
                               {user.role.name.charAt(0).toUpperCase() + user.role.name.slice(1)}
                             </span>
                           </div>
                           
-                          <div className="grid grid-cols-2 gap-4 mb-4 text-sm">
+                          <div className="grid grid-cols-2 gap-4 sm:gap-3 mb-4 sm:mb-3 text-sm sm:text-xs">
                             <div>
                               <span className="text-gray-500 dark:text-gray-400">Annual Leave:</span>
                               <p className="font-medium text-gray-900 dark:text-white">
@@ -523,10 +539,10 @@ function EditUsersContent() {
                             </div>
                           </div>
                           
-                          <div className="flex flex-col sm:flex-row gap-2">
+                          <div className="flex flex-col sm:flex-row gap-3 sm:gap-2">
                             <button
                               onClick={() => handleEditUser(user)}
-                              className="flex-1 inline-flex items-center justify-center px-3 py-2 min-h-[44px] bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-all duration-200 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:bg-blue-500 dark:hover:bg-blue-600 dark:focus:ring-blue-400"
+                              className="flex-1 inline-flex items-center justify-center px-3 py-3 sm:py-2 min-h-[44px] bg-blue-600 hover:bg-blue-700 text-white text-base sm:text-sm font-medium rounded-lg transition-all duration-200 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:bg-blue-500 dark:hover:bg-blue-600 dark:focus:ring-blue-400"
                             >
                               <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -535,7 +551,7 @@ function EditUsersContent() {
                             </button>
                             <button
                               onClick={() => handleDeleteUser(user)}
-                              className="flex-1 inline-flex items-center justify-center px-3 py-2 min-h-[44px] bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition-all duration-200 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:bg-red-500 dark:hover:bg-red-600 dark:focus:ring-red-400"
+                              className="flex-1 inline-flex items-center justify-center px-3 py-3 sm:py-2 min-h-[44px] bg-red-600 hover:bg-red-700 text-white text-base sm:text-sm font-medium rounded-lg transition-all duration-200 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:bg-red-500 dark:hover:bg-red-600 dark:focus:ring-red-400"
                             >
                               <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1-1H8a1 1 0 00-1 1v3M4 7h16" />
@@ -547,7 +563,7 @@ function EditUsersContent() {
                       ))}
                     </div>
 
-                    {/* Desktop Table Layout */}
+              
                     <div className="hidden lg:block overflow-x-auto">
                       <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-600">
                     <thead className="bg-gray-50 dark:bg-gray-700">
@@ -684,7 +700,7 @@ function EditUsersContent() {
                             <div className="flex items-center justify-end space-x-2">
                               <button
                                 onClick={() => handleEditUser(user)}
-                                className="inline-flex items-center px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-md transition-all duration-200 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:bg-blue-500 dark:hover:bg-blue-600 dark:focus:ring-blue-400"
+                                className="inline-flex items-center px-3 py-2 sm:py-1.5 min-h-[40px] bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-all duration-200 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:bg-blue-500 dark:hover:bg-blue-600 dark:focus:ring-blue-400"
                               >
                                 <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -693,7 +709,7 @@ function EditUsersContent() {
                               </button>
                               <button
                                 onClick={() => handleDeleteUser(user)}
-                                className="inline-flex items-center px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-md transition-all duration-200 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:bg-red-500 dark:hover:bg-red-600 dark:focus:ring-red-400"
+                                className="inline-flex items-center px-3 py-2 sm:py-1.5 min-h-[40px] bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-md transition-all duration-200 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:bg-red-500 dark:hover:bg-red-600 dark:focus:ring-red-400"
                               >
                                 <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1-1H8a1 1 0 00-1 1v3M4 7h16" />
@@ -710,12 +726,14 @@ function EditUsersContent() {
                   </>
                 )}
               </div>
-              </div>
+            </div>
           </div>
         </div>
+      </div>
       </main>
+    </div>
 
-      {showEditForm && selectedUser && (
+    {showEditForm && selectedUser && (
         <EditUserForm
           user={selectedUser}
           onUserUpdated={handleUserUpdated}
@@ -745,7 +763,7 @@ function EditUsersContent() {
         }}
         variant="danger"
       />
-    </div>
+    </>
   );
 }
 
