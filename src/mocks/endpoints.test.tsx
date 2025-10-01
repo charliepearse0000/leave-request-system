@@ -1,6 +1,3 @@
-// MSW Mock Endpoints Integration Tests
-// This test verifies that MSW handlers are properly configured and can be used
-
 import fs from 'fs'
 import path from 'path'
 
@@ -10,16 +7,16 @@ describe('MSW Mock Endpoints Integration Tests', () => {
       const handlersPath = path.join(__dirname, 'handlers.ts')
       const handlersContent = fs.readFileSync(handlersPath, 'utf8')
       
-      // Verify handlers are configured for our endpoints
-      expect(handlersContent).toContain("http.post('/login'")
-      expect(handlersContent).toContain("http.get('/leave'")
-      expect(handlersContent).toContain("http.post('/leave'")
+      expect(handlersContent).toContain("http.post('http://localhost:3000/api/auth/login'")
+      expect(handlersContent).toContain("http.get('http://localhost:3000/api/leave-requests/me'")
+      expect(handlersContent).toContain("http.post('http://localhost:3000/api/leave-requests'")
+      expect(handlersContent).toContain("http.post('http://localhost:3000/api/leave-requests/:id/approve'")
+      expect(handlersContent).toContain("http.post('http://localhost:3000/api/leave-requests/:id/reject'")
       
-      // Verify response structures are defined
        expect(handlersContent).toContain('token')
        expect(handlersContent).toContain('user')
-       expect(handlersContent).toContain('data')
-       expect(handlersContent).toContain('success')
+       expect(handlersContent).toContain('firstName')
+       expect(handlersContent).toContain('lastName')
     })
     
     it('should export handlers array for MSW server', () => {

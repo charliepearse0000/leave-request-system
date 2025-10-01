@@ -1,35 +1,31 @@
 import fs from 'fs'
 import path from 'path'
 
-// Test the handlers configuration without importing MSW modules
 describe('MSW Handlers Configuration', () => {
   it('should have handlers file with login endpoint', () => {
     const handlersPath = path.join(__dirname, 'handlers.ts')
     const handlersContent = fs.readFileSync(handlersPath, 'utf-8')
     
-    // Check for login handler
-    expect(handlersContent).toContain("http.post('/login'")
-    expect(handlersContent).toContain('Login successful')
-    expect(handlersContent).toContain('mock-jwt-token')
+    expect(handlersContent).toContain("http.post('http://localhost:3000/api/auth/login'")
+    expect(handlersContent).toContain('mock-jwt-token-12345')
+    expect(handlersContent).toContain('john.doe@company.com')
   })
 
   it('should have handlers file with GET leave endpoint', () => {
     const handlersPath = path.join(__dirname, 'handlers.ts')
     const handlersContent = fs.readFileSync(handlersPath, 'utf-8')
     
-    // Check for GET leave handler
-    expect(handlersContent).toContain("http.get('/leave'")
-    expect(handlersContent).toContain('annual')
-    expect(handlersContent).toContain('approved')
+    expect(handlersContent).toContain("http.get('http://localhost:3000/api/leave-requests/me'")
+    expect(handlersContent).toContain('Annual Leave')
+    expect(handlersContent).toContain('pending')
   })
 
   it('should have handlers file with POST leave endpoint', () => {
     const handlersPath = path.join(__dirname, 'handlers.ts')
     const handlersContent = fs.readFileSync(handlersPath, 'utf-8')
     
-    // Check for POST leave handler
-    expect(handlersContent).toContain("http.post('/leave'")
-    expect(handlersContent).toContain('Leave request submitted successfully')
+    expect(handlersContent).toContain("http.post('http://localhost:3000/api/leave-requests'")
+    expect(handlersContent).toContain('Spring break')
     expect(handlersContent).toContain('pending')
   })
 
@@ -38,10 +34,10 @@ describe('MSW Handlers Configuration', () => {
     const handlersContent = fs.readFileSync(handlersPath, 'utf-8')
     
     // Check login response structure
-    expect(handlersContent).toContain('success: true')
-    expect(handlersContent).toContain('user:')
-    expect(handlersContent).toContain('email:')
     expect(handlersContent).toContain('token:')
+    expect(handlersContent).toContain('user:')
+    expect(handlersContent).toContain('firstName:')
+    expect(handlersContent).toContain('lastName:')
   })
 
   it('should have proper response structure for leave endpoints', () => {
@@ -49,7 +45,7 @@ describe('MSW Handlers Configuration', () => {
     const handlersContent = fs.readFileSync(handlersPath, 'utf-8')
     
     // Check leave response structure
-    expect(handlersContent).toContain('employeeId:')
+    expect(handlersContent).toContain('leaveType:')
     expect(handlersContent).toContain('startDate:')
     expect(handlersContent).toContain('endDate:')
     expect(handlersContent).toContain('status:')

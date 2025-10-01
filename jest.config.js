@@ -19,6 +19,7 @@ const customJestConfig = {
     TextDecoder: require('util').TextDecoder,
     TransformStream: require('stream/web').TransformStream,
   },
+  setupFiles: ['<rootDir>/jest.globals.js'],
   moduleNameMapper: {
     // Handle module aliases (this will be automatically configured for you based on your tsconfig.json paths)
     '^@/(.*)$': '<rootDir>/src/$1',
