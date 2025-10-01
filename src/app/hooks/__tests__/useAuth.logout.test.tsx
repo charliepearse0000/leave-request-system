@@ -9,12 +9,6 @@ jest.mock('next/navigation', () => ({
 describe('useAuth logout', () => {
   beforeEach(() => {
     localStorage.clear();
-    jest.useFakeTimers();
-  });
-
-  afterEach(() => {
-    jest.clearAllTimers();
-    jest.useRealTimers();
   });
 
   it('clears tokens, updates state, and navigates on logout', () => {
