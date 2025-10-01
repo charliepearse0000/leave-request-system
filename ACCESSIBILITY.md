@@ -111,12 +111,20 @@ npm run test:contrast
   - Dev server starts temporarily on a random port and is auto-stubbed for required API calls.
 
 ### Component-level A11y (Jest + RTL + axe-core)
-- For component/integration tests (avoiding full pages), enable gated a11y checks:
-  - Windows PowerShell: `$env:RUN_A11Y='true'; npm run test:a11y:rtl:new-request` and `$env:RUN_A11Y='true'; npm run test:a11y:rtl:requests`
+Component and integration suites use axe in the Jest/RTL environment and are gated by `RUN_A11Y` to keep the default test run fast.
+
+How to run:
+- Convenience: `npm run test:a11y:rtl:components` (runs new-request and requests suites)
+- Individually:
+  - Windows PowerShell: `Set-Item Env:RUN_A11Y 'true'; npm run test:a11y:rtl:new-request` and `Set-Item Env:RUN_A11Y 'true'; npm run test:a11y:rtl:requests`
   - Bash: `RUN_A11Y=true npm run test:a11y:rtl:new-request` and `RUN_A11Y=true npm run test:a11y:rtl:requests`
-- Notes:
-  - Tests fail on `serious`/`critical` violations.
-  - Keep page-level checks in Playwright to avoid RTL hangs.
+
+What they check:
+- Run axe against rendered component containers (not full pages).
+- Fail the test suite on `serious` or `critical` violations.
+- Use targeted mocks to avoid heavy UI/Router issues and keep runs stable.
+
+Tip: Use Playwright page audits for whole-page checks and keep RTL focus on components to avoid hangs.
 
 ### Manual Testing Checklist
 - [ ] Keyboard-only navigation
@@ -219,3 +227,16 @@ npm run test:contrast
 **Last Updated**: September 2025  
 **Compliance Level**: WCAG 2.1 AA  
 **Audit Status**: Passing All Tests
+
+## Run All Frontend Tests
+
+To execute all frontend tests (unit/integration + component a11y + page audits):
+
+```bash
+npm run test:frontend:all
+```
+
+This runs:
+- Standard Jest tests (`npm test`)
+- Component-level a11y suites (`test:a11y:rtl:components`)
+- Playwright page audits (`test:a11y:home`, `test:a11y:manager`, `test:a11y:admin`)

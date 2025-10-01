@@ -25,7 +25,7 @@ This was built for our university Agile Software Development course.
 
 ## Backend API
 
-The backend is included in the `DONT EDIT ANYTHING IN HERE (API)` folder. It's a Node.js/Express API with these main endpoints:
+The backend is included in the `API` folder. It's a Node.js/Express API with these main endpoints:
 
 - `POST /login` - Authentication
 - `GET /leave` - Get leave requests
@@ -33,7 +33,7 @@ The backend is included in the `DONT EDIT ANYTHING IN HERE (API)` folder. It's a
 - `PUT /leave/:id` - Update leave request
 - `DELETE /leave/:id` - Delete leave request
 
-API documentation is in the Postman collection at `DONT EDIT ANYTHING IN HERE (API)/postman/Leave Management System.postman_collection.json`.
+API documentation is in the Postman collection at `API/postman/Leave Management System.postman_collection.json`.
 
 **Note To Self**: Don't edit anything in the API folder - it represents the production backend.
 
@@ -77,7 +77,7 @@ NEXT_PUBLIC_DEV_MODE=true
 
 ### Backend configuration
 
-The backend API configuration is already set up in `DONT EDIT ANYTHING IN HERE (API)/.env`. If you need to modify it:
+The backend API configuration is already set up in `API/.env`. If you need to modify it:
 
 ```bash
 # Server Configuration
@@ -117,7 +117,7 @@ If the connection fails, check:
 
 3. Start the backend:
 ```bash
-cd "DONT EDIT ANYTHING IN HERE (API)"
+cd "API"
 npm install
 npm run dev
 ```
@@ -149,7 +149,7 @@ If something's not working:
 - **Login fails**: Make sure the backend `.env` has a JWT_SECRET set
 - **Database errors**: Check PostgreSQL is running and your database credentials are correct
 
-For the full API docs, check the Postman collection in `DONT EDIT ANYTHING IN HERE (API)/postman/`.
+For the full API docs, check the Postman collection in `API/postman/`.
 
 ## Project structure
 
@@ -159,7 +159,7 @@ leave-request-system/
 ├── components/                 # React components
 ├── pages/                      # Next.js pages
 ├── styles/                     # CSS files
-├── DONT EDIT ANYTHING IN HERE (API)/
+├── API/
 │   ├── .env                   # Backend config (create this)
 │   ├── src/                   # API source code
 │   └── postman/               # API documentation
@@ -173,6 +173,19 @@ Run tests with:
 npm test
 ```
 
+Additional test suites:
+- Component-level accessibility (Jest + RTL + axe-core):
+  - `npm run test:a11y:rtl:components` (runs gated a11y checks for component/integration suites)
+- Page-level accessibility audits (Playwright + axe-core):
+  - `npm run test:a11y:home`
+  - `npm run test:a11y:manager`
+  - `npm run test:a11y:admin`
+
+Run everything at once:
+```bash
+npm run test:frontend:all
+```
+
 ## Development
 
 Useful commands:
@@ -183,7 +196,7 @@ npm run lint         # Check code style
 npm test             # Run tests
 ```
 
-This project uses Next.js 15 with TypeScript and Tailwind CSS. The backend API is in the `DONT EDIT ANYTHING IN HERE (API)` folder - don't modify it.
+This project uses Next.js 15 with TypeScript and Tailwind CSS. The backend API is in the `API` folder - don't modify it.
 
 ## Contributing
 
