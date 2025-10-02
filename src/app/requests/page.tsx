@@ -413,7 +413,7 @@ const LeaveRequestsPage = () => {
                     </span>
                   </button>
                   {showFilterDropdown && (
-                    <div className="absolute top-12 left-0 w-48 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg z-50">
+                    <div className="absolute top-12 right-0 w-56 max-w-[calc(100vw-1rem)] max-h-[60vh] overflow-auto bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg z-50">
                       <button
                         onClick={() => {
                           setStatusFilter('all');
@@ -512,7 +512,7 @@ const LeaveRequestsPage = () => {
                     </span>
                   </button>
                   {showSortDropdown && (
-                    <div className="absolute top-12 left-0 w-48 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg z-50">
+                    <div className="absolute top-12 right-0 w-56 max-w-[calc(100vw-1rem)] max-h-[60vh] overflow-auto bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg z-50">
                       <button
                         onClick={() => {
                           setSortField('leaveType');
@@ -669,7 +669,7 @@ const LeaveRequestsPage = () => {
                    </div>
                  </div>
                  
-                 <div className="flex flex-wrap gap-2">
+                 <div className="hidden">
                    <button
                      onClick={() => handleSort('leaveType')}
                      className={`px-3 py-2 text-sm rounded-lg border transition-colors flex items-center gap-2 ${

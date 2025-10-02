@@ -255,7 +255,7 @@ function EditUsersContent() {
                         </span>
                       </button>
                       {showFilterDropdown && (
-                        <div className="absolute top-12 left-0 w-48 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg z-50">
+                        <div className="absolute top-12 right-0 w-56 max-w-[calc(100vw-1rem)] max-h-[60vh] overflow-auto bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg z-50">
                           <button
                             onClick={() => {
                               setRoleFilter('all');
@@ -336,7 +336,7 @@ function EditUsersContent() {
                         </span>
                       </button>
                       {showSortDropdown && (
-                        <div className="absolute top-12 left-0 w-48 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg z-50">
+                        <div className="absolute top-12 right-0 w-56 max-w-[calc(100vw-1rem)] max-h-[60vh] overflow-auto bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg z-50">
                           <button
                             onClick={() => {
                               setSortBy('name');
